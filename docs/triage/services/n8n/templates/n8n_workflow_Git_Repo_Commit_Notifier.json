@@ -1,0 +1,90 @@
+{
+  "name": "Git_Repo_Commit_Notifier",
+  "nodes": [
+    {
+      "parameters": {
+        "cronExpression": "0 * * * *"
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "notes": "Runs every hour."
+    },
+    {
+      "parameters": {
+        "command": "git ls-remote https://github.com/user/automation-stack.git refs/heads/main | cut -f1",
+        "options": {}
+      },
+      "name": "Get Latest Commit Hash",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "notes": "Fetches latest commit hash from remote repo."
+    },
+    {
+      "parameters": {
+        "values": [
+          {"name": "currentCommitHash", "value": "{{$json.stdout.trim()}}"},
+          {"name": "previousCommitHash", "value": "{{ $env.STATIC_DATA.lastCommitHash || '' }}"}
+        ]
+      },
+      "name": "Set Hashes",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "notes": "Stores current and previous commit hashes."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [{"value1": "={{$json.currentCommitHash}}", "operation": "notEqual", "value2": "={{$json.previousCommitHash}}"}]
+        }
+      },
+      "name": "IF New Commit",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "notes": "Checks if a new commit is detected."
+    },
+    {
+      "parameters": {
+        "url": "http://notification_endpoint/commit",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"new_commit\": \"{{$json.currentCommitHash}}\", \"notified\": true, \"status\": \"new_commit\"}"
+      },
+      "name": "Send Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1000, 200],
+      "notes": "Sends notification if new commit is found."
+    },
+    {
+      "parameters": {
+        "values": [
+          {"name": "lastCommitHash", "value": "{{$json.currentCommitHash}}"}
+        ]
+      },
+      "name": "Update Static Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [1200, 200],
+      "notes": "Updates static data with latest commit hash."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {"main": [[{"node": "Get Latest Commit Hash", "type": "main", "index": 0}]]},
+    "Get Latest Commit Hash": {"main": [[{"node": "Set Hashes", "type": "main", "index": 0}]]},
+    "Set Hashes": {"main": [[{"node": "IF New Commit", "type": "main", "index": 0}]]},
+    "IF New Commit": {"main": [
+      [{"node": "Send Notification", "type": "main", "index": 0}],
+      []
+    ]},
+    "Send Notification": {"main": [[{"node": "Update Static Data", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {},
+  "id": "git-repo-commit-notifier-2025"
+} 

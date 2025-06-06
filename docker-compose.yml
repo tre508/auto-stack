@@ -1,0 +1,248 @@
+# docker-compose.yml
+# Unified Docker Compose for the auto-stack project.
+# Derived from compose-mcp.yml and new-stack-agent-guide.md
+
+services:
+  traefik_auto:
+    image: traefik:v2.11
+    container_name: traefik_auto
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443" # Added for potential HTTPS
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      # - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro" # Optional: if you have custom static config
+      # - "./traefik/certs:/etc/traefik/certs:ro" # Optional: for custom certs
+    networks:
+      - auto-stack-net
+    restart: unless-stopped
+
+  n8n_auto:
+    build:
+      context: .
+      dockerfile: n8n_auto.Dockerfile
+    container_name: n8n_auto
+    restart: unless-stopped
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-true}
+      - N8N_HOST=${N8N_HOST:-n8n.localhost} # Use Traefik hostname
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://n8n_auto:5678/webhook} # Internal URL
+      - N8N_API_KEY=${N8N_API_KEY}
+      - N8N_LICENSE_KEY=${N8N_LICENSE_KEY} # Optional
+      - DB_TYPE=sqlite
+      - DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+      - N8N_SECURE_COOKIE=false # Review for production
+      - N8N_ALLOW_EXEC=true # If Execute Command node is used
+      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true # For community nodes
+      - NODE_FUNCTION_ALLOW_EXTERNAL=true # For Function node if it needs external modules
+      - NODE_ENV=production
+      - GENERIC_TIMEZONE=${TZ:-Europe/Berlin} # For consistent timezone
+    volumes:
+      - /d/docker-volumes/n8n_data:/home/node/.n8n # Standard n8n data
+      - /d/docker-volumes/n8n_host_vault:/host_vault # For Doc_Mirror_Update.json
+      - /d/docker-volumes/n8n_mem0_backups:/data/mem0_backups # For n8n_workflow_Mem0_Memory_Logger.json backups
+      - /var/run/docker.sock:/var/run/docker.sock # For docker exec commands
+    networks:
+      - auto-stack-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n_auto.rule=Host(`${N8N_TRAEFIK_HOST:-n8n.localhost}`)" # Use N8N_TRAEFIK_HOST from .env or default
+      - "traefik.http.routers.n8n_auto.entrypoints=web"
+      - "traefik.http.services.n8n_auto.loadbalancer.server.port=5678" # n8n internal port
+    depends_on:
+      - traefik_auto
+
+  bge_embedding_auto:
+    build:
+      context: ./hf_spaces/bge-embedding-api
+      dockerfile: Dockerfile
+    container_name: bge_embedding_auto
+    restart: unless-stopped
+    environment:
+      - HF_HOME=/tmp/huggingface_cache # As per its Dockerfile
+      - TRANSFORMERS_CACHE=/tmp/huggingface_cache/transformers
+      # Add any other specific model or API keys if the embedding service requires them
+    volumes:
+      - "/d/docker-volumes/hf_cache:/tmp/huggingface_cache" # Persist downloaded models on D:
+    networks:
+      - auto-stack-net
+    ports: # Optional: expose directly if needed for testing, otherwise let Traefik handle it
+      - "7861:7860" # Exposing on 7861 to avoid conflict if something else uses 7860
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.bge_embedding_auto.rule=Host(`${BGE_EMBEDDING_TRAEFIK_HOST:-bge.localhost}`)"
+      - "traefik.http.routers.bge_embedding_auto.entrypoints=web"
+      - "traefik.http.services.bge_embedding_auto.loadbalancer.server.port=7860" # Internal port of bge service
+    healthcheck: # From its Dockerfile
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+
+  controller_auto:
+    build: ./controller
+    container_name: controller_auto
+    restart: unless-stopped
+    env_file:
+      - .env # Global .env
+      - ./controller/.env # Service specific .env
+    environment:
+      # EKO_SERVICE_URL, MEM0_API_URL, etc. are loaded from .env files.
+      # The controller needs to know the internal service names.
+      # Example override for clarity (values from .env files take precedence):
+      - MEM0_API_URL=http://mem0_auto:8000
+      - HF_SPACE_EMBEDDER_ENDPOINT=http://bge_embedding_auto:7860/v1/embeddings
+      - OPENROUTER_PROXY_SERVICE_URL=http://openrouter_proxy_auto:8000/v1
+    ports:
+      - "${CONTROLLER_EXTERNAL_PORT:-5050}:${CONTROLLER_PORT:-5050}"
+    networks:
+      - auto-stack-net
+    depends_on:
+      - n8n_auto
+      - mem0_auto
+      - bge_embedding_auto
+      - openrouter_proxy_auto
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.controller_auto.rule=Host(`${CONTROLLER_TRAEFIK_HOST:-controller.localhost}`)"
+      - "traefik.http.routers.controller_auto.entrypoints=web"
+      - "traefik.http.services.controller_auto.loadbalancer.server.port=${CONTROLLER_PORT:-5050}"
+
+  eko_service_auto:
+    build:
+      context: ./controller
+      dockerfile: Dockerfile.eko
+    container_name: eko_service_auto
+    restart: unless-stopped
+    env_file:
+      - .env # Global .env for keys like ANTHROPIC_API_KEY, OPENAI_API_KEY (which is OpenRouter key)
+      - ./controller/.env # For EKO_LLM_PROVIDER, EKO_MODEL_NAME
+    environment:
+      - EKO_SERVICE_PORT=3001 # App inside listens on 3001
+    # ports: # Usually not needed if only controller accesses it internally
+    #   - "${EKO_EXTERNAL_PORT:-3002}:3001"
+    networks:
+      - auto-stack-net
+
+  openrouter_proxy_auto:
+    build: ./openrouter_proxy
+    container_name: openrouter_proxy_auto
+    restart: unless-stopped
+    env_file:
+      - .env # For OPENROUTER_API_KEY
+      - ./openrouter_proxy/.env # For specific proxy settings
+    ports:
+      - "${OPENROUTER_PROXY_EXTERNAL_PORT:-8001}:8000" # Internal port is 8000 (from its .env)
+    networks:
+      - auto-stack-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.openrouter_proxy_auto.rule=Host(`${OPENROUTER_PROXY_TRAEFIK_HOST:-openrouter.localhost}`)"
+      - "traefik.http.routers.openrouter_proxy_auto.entrypoints=web"
+      - "traefik.http.services.openrouter_proxy_auto.loadbalancer.server.port=8000" # Internal port
+
+  qdrant_auto:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_auto
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_EXTERNAL_REST_PORT:-6333}:6333"
+      - "${QDRANT_EXTERNAL_GRPC_PORT:-6334}:6334"
+    volumes:
+      - "/d/docker-volumes/qdrant_storage:/qdrant/storage"
+    networks:
+      - auto-stack-net
+
+  mem0_auto:
+    build:
+      context: ./mem0/server # Dockerfile is in server/
+      dockerfile: Dockerfile
+    container_name: mem0_auto
+    restart: unless-stopped
+    env_file:
+      - .env # For HF_TOKEN (as OPENAI_API_KEY for controller proxy)
+      - ./mem0/.env # For other mem0 specific settings (MEM0_HOST, MEM0_PORT, QDRANT_HOST etc.)
+    environment:
+      # MEM0_CONFIG_PATH=/app/config.yaml (already in its .env)
+      # PORT=8000 (from its .env, used by uvicorn in its Dockerfile)
+      # OPENAI_API_KEY will be HF_TOKEN via ./mem0/.env which gets it from root .env's HF_TOKEN
+      # OPENAI_BASE_URL points to controller proxy via ./mem0/.env
+      - QDRANT_HOST=qdrant_auto # Ensure this overrides any value in mem0/.env if it's not already qdrant_auto
+      - QDRANT_PORT=6333
+    ports:
+      - "${MEM0_EXTERNAL_PORT:-8000}:8000" # Internal port is 8000 (from its .env)
+    volumes:
+      - ./mem0/server/config.yaml:/app/config.yaml:ro
+      - "/d/docker-volumes/mem0_data:/data" # Assuming /data is a generic data dir for mem0
+    networks:
+      - auto-stack-net
+    depends_on:
+      - qdrant_auto
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mem0_auto.rule=Host(`${MEM0_TRAEFIK_HOST:-mem0.localhost}`)"
+      - "traefik.http.routers.mem0_auto.entrypoints=web"
+      - "traefik.http.services.mem0_auto.loadbalancer.server.port=8000" # Internal port
+
+  postgres_logging_auto:
+    image: postgres:15 # Or specific version like postgres:15-alpine
+    container_name: postgres_logging_auto
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_LOGGING_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_LOGGING_USER:-autostack_logger}
+      POSTGRES_PASSWORD: ${POSTGRES_LOGGING_PASSWORD:-yoursecurepassword_logger}
+      POSTGRES_DB: ${POSTGRES_LOGGING_DB:-autostack_logs}
+    volumes:
+      - /d/docker-volumes/pg_logs_data:/var/lib/postgresql/data # Mapped to default PGDATA
+    networks:
+      - auto-stack-net
+
+  freq_chat_auto:
+    build:
+      context: ./freq-chat
+      dockerfile: Dockerfile
+      args:
+        # Use the service name for postgres, assuming freqchat_user and freqchat_db are desired for this migration
+        # Ensure postgres_logging_auto is set up to handle this user/db or adjust as needed.
+        - POSTGRES_URL_BUILD_ARG=postgresql://freqchat_user:7453@postgres_logging_auto:5432/freqchat_db
+    container_name: freq_chat_auto
+    restart: unless-stopped
+    env_file: # Freq-Chat's Next.js app should pick up .env.development.local or .env.production
+      - ./freq-chat/.env.development.local # Or .env.production depending on NODE_ENV
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      # URLs for server-side API calls should use internal service names for robustness.
+      # Traefik hostnames are better for client-side fetches (NEXT_PUBLIC_).
+      - CONTROLLER_API_URL=http://controller_auto:5050/api/v1 # Internal URL
+      - MEM0_API_URL=http://mem0_auto:8000 # Internal URL
+      - NEXT_PUBLIC_CONTROLLER_API_URL=http://controller.localhost/api/v1 # External URL for client
+      - NEXT_PUBLIC_MEM0_API_URL=http://mem0.localhost/ # External URL for client
+      - NEXTAUTH_URL=${FREQCHAT_NEXTAUTH_URL:-http://localhost:3001}
+    ports:
+      - "${FREQCHAT_EXTERNAL_PORT:-3001}:3000" # Next.js default internal port is 3000
+    networks:
+      - auto-stack-net
+    depends_on:
+      - controller_auto
+      - mem0_auto
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.freq_chat_auto.rule=Host(`${FREQCHAT_TRAEFIK_HOST:-chat.localhost}`)"
+      - "traefik.http.routers.freq_chat_auto.entrypoints=web"
+      - "traefik.http.services.freq_chat_auto.loadbalancer.server.port=3000" # Next.js internal port
+
+networks:
+  auto-stack-net:
+    driver: bridge
+    name: auto-stack-net
+
+# No top-level volumes: key if all volumes are host-mounted directly in services 

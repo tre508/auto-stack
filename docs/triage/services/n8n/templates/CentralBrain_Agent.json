@@ -1,0 +1,1011 @@
+{
+  "name": "CentralBrain_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "test/webhook/centralbrain_agent",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -680,
+        840
+      ],
+      "id": "e4668445-f46b-47af-a20d-680c2ee03396",
+      "webhookId": "23d2cfb2-3b5a-49dc-8e97-44c0699c8674",
+      "typeVersion": 2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Extract Command Field",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -400,
+        840
+      ],
+      "id": "69a65847-32b1-4644-8959-48eb450e191a",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## CentralBrain_Agent – Initial Input Logic\n\n1. **Webhook Trigger** – Listens for POST requests at `/centralbrain_agent`. Receives JSON from OpenWebUI.\n2. **Extract Command Field** – Retrieves the `command` field from the incoming JSON for downstream routing.\n\n➡️ Next steps: Add logic for command-based routing, HTTP requests to manager agents, and response aggregation.",
+        "height": 280,
+        "width": 510
+      },
+      "name": "Input Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -460,
+        540
+      ],
+      "id": "98aa9045-ee22-4b3a-84c8-2d4bed38fa3a",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "={{$json.command}}",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.command}}",
+                    "rightValue": "freqtrade",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "route-freqtrade"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "={{$json.command}}",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.command}}",
+                    "rightValue": "freqai",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "route-freqai"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "={{$json.command}}",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.command}}",
+                    "rightValue": "research",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "route-research"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "={{$json.command}}",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.command}}",
+                    "rightValue": "utility",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "route-utility"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Route to Manager",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        420,
+        820
+      ],
+      "defaults": {
+        "name": "Route to Manager",
+        "color": "#506000"
+      },
+      "id": "fd0a357c-2778-474c-8f15-d0e1c223529c",
+      "typeVersion": 3.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your.freqtrade.manager/api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"command\": $json[\"command\"], \"payload\": $json[\"payload\"] }",
+        "options": {}
+      },
+      "name": "FreqtradeManager Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        720,
+        720
+      ],
+      "id": "e6a35178-0137-4f4e-bc30-80dd13e15bff",
+      "alwaysOutputData": true,
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your.freqai.manager/api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"command\": $json[\"command\"], \"payload\": $json[\"payload\"] }",
+        "options": {}
+      },
+      "name": "FreqAIManager Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        860,
+        840
+      ],
+      "id": "9c4fde38-247f-495e-a4d7-84e461e920ed",
+      "alwaysOutputData": true,
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your.research.manager/api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"command\": $json[\"command\"], \"payload\": $json[\"payload\"] }",
+        "options": {}
+      },
+      "name": "ResearchManager Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        720,
+        1000
+      ],
+      "id": "4d97db04-efa6-4c11-b445-970379d7884f",
+      "alwaysOutputData": true,
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://your.utility.manager/api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"command\": $json[\"command\"], \"payload\": $json[\"payload\"] }",
+        "options": {}
+      },
+      "name": "UtilityManager Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        580,
+        1160
+      ],
+      "id": "61385517-c4f1-4521-87e0-e4f90c226e94",
+      "alwaysOutputData": true,
+      "typeVersion": 4.2,
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "## Manager Routing Logic\n\n- The **Switch** node checks the extracted `command` field.\n- Each rule matches one of the supported manager names: `FreqtradeManager`, `FreqAIManager`, `ResearchManager`, or `UtilityManager`.\n- \n- Each route triggers a corresponding HTTP Request node, calling the relevant agent API. Ensure the URLs are configured correctly for your agents.\n\n➡️ **Next:** Aggregate responses, handle errors, and return a structured output.",
+        "height": 320,
+        "width": 470,
+        "color": 4
+      },
+      "name": "Manager Routing Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        380
+      ],
+      "id": "9b35006f-0f56-4e27-b9b2-3355863c8e28",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Format Aggregated Output",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1200,
+        1640
+      ],
+      "id": "8875923e-b063-4707-abdd-72a0c6213bc8",
+      "alwaysOutputData": true,
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "### Aggregation and Output Formatting 🧩\n\n- The **Format Aggregated Output** node creates the final response object in the required structure:\n  - `status`: Operation status (static or could be dynamic based on error handling).\n  - `message`: Human-readable summary of the aggregated call(s).\n  - `data`: Contains the actual aggregated data from manager agents (all input from previous nodes).\n\nNext: Wire the outputs from the manager HTTP nodes into this one, then connect to a Webhook Response node to return the result.",
+        "height": 320,
+        "width": 400,
+        "color": 4
+      },
+      "name": "Aggregation Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1100,
+        440
+      ],
+      "id": "6244f50e-70e6-4cdf-8955-d8bed12634fb",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1740,
+        1320
+      ],
+      "id": "567c1b16-a91f-4b09-9db4-49d75e38124b",
+      "alwaysOutputData": true,
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "content": "## Webhook Response\n\n- The **Respond to Webhook** node sends the final, aggregated result back to the OpenWebUI requester in the shape `{ status, message, data }`.\n- The response data is prepared by the previous Set node (**Format Aggregated Output**).\n\nYou can add error handling and logging as next steps if needed.\n",
+        "height": 230,
+        "width": 425,
+        "color": 5
+      },
+      "name": "Webhook Response Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1440,
+        840
+      ],
+      "id": "c8c57be2-d8a8-4d32-bd1c-cbcda0deeaf4",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "name": "Error Handler",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -20,
+        1600
+      ],
+      "id": "696bfb15-28d2-47ea-b209-545453c3830e",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "functionCode": "// Logs all incoming actions and errors\nfor (item of items) {\n  const logType = $node[\"Error Handler\"] ? \"error\" : \"action\";\n  // Here you could push data to external logging service or database\n  item.json.log_type = logType;\n  item.json.timestamp = new Date().toISOString();\n  item.json.message = item.json.message || item.json.error || \"Logged action/error\";\n}\nreturn items;"
+      },
+      "name": "Log Action/Error",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        200,
+        1600
+      ],
+      "id": "a8a680b2-f232-4954-a2a9-484f3fce037c",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Log Aggregator",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        420,
+        1600
+      ],
+      "id": "0e969783-43f8-465b-b263-db2a92e22090",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "mode": "name",
+          "value": "centralbrain_logs"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "connectionTimeout": 10000,
+          "delayClosingIdleConnection": 5000,
+          "queryBatching": "single"
+        }
+      },
+      "name": "Log to Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        640,
+        1600
+      ],
+      "id": "c6119854-61f7-4772-8714-5d979ae067a5",
+      "typeVersion": 2.6,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "08MaMJRMix6SzDtg",
+          "name": "Postgres account"
+        }
+      },
+      "notes": "Logs workflow events to centralbrain_logs table in Postgres.\n- Retries: 3, 1s delay\n- Requires input fields to match DB columns\n- For troubleshooting: verify Postgres is running and credentials are correct"
+    },
+    {
+      "parameters": {
+        "content": "### Logging & Error Handling\n\n- All workflow actions and errors are logged to the **centralbrain_logs** table in Postgres.\n- Fields include: timestamp, workflow, action, status, details, and error.\n- Check this table for a full audit/history or debugging.\n\nYou may extend this logging branch to perform notifications, or to send error alerts!",
+        "height": 310,
+        "width": 350,
+        "color": 5
+      },
+      "name": "Logging & Error Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -460,
+        1440
+      ],
+      "id": "0bab935c-a17d-423f-abde-facca555ddf9",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Unknown Command Error",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        940,
+        1580
+      ],
+      "id": "d76ae14a-a35d-4ee3-bca5-b77e2b5db20a",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "FreqtradeManager Error",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1220,
+        840
+      ],
+      "id": "85b265fe-06e0-4e72-b8dd-93c01bb72e5c",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.statusCode}}",
+              "operation": ">=",
+              "value2": 400
+            }
+      ],
+          "boolean": [],
+          "string": [
+            {
+              "value1": "={{$json.error}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "FreqtradeManager IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        960,
+        700
+      ],
+      "id": "fdff62dd-5a53-4556-8874-981153269ab9",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "FreqAIManager Error",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1260,
+        1000
+      ],
+      "id": "8a06b3fe-2315-4340-8486-6c61273c0c15",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.statusCode}}",
+              "operation": ">=",
+              "value2": 400
+            }
+          ],
+          "boolean": [],
+          "string": [
+            {
+              "value1": "={{$json.error}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "FreqAIManager IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1040,
+        960
+      ],
+      "id": "f59a671e-df89-415a-a1f3-c835b848b081",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "ResearchManager Error",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1260,
+        1180
+      ],
+      "id": "42c13c7e-c7dd-4779-9fb5-dca7a9084bc8",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.statusCode}}",
+              "operation": ">=",
+              "value2": 400
+            }
+          ],
+          "boolean": [],
+          "string": [
+            {
+              "value1": "={{$json.error}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "ResearchManager IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        940,
+        1140
+      ],
+      "id": "e57ccd84-9b1a-4d18-a4e8-9c81e0a9e482",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "UtilityManager Error",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1300,
+        1380
+      ],
+      "id": "8e60e8da-207a-40d8-bd71-790328688c6b",
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.statusCode}}",
+              "operation": ">=",
+              "value2": 400
+            }
+          ],
+          "boolean": [],
+          "string": [
+            {
+              "value1": "={{$json.error}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "UtilityManager IF",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        840,
+        1340
+      ],
+      "id": "e7139602-35d3-4998-b5cb-ed69fae27f15",
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "### Webhook Usage\n- This workflow expects POST requests with a JSON body at the /centralbrain_agent endpoint.\n- Use the production webhook URL (no /test/ in the path) for all integrations.\n- Example: http://n8n:5678/webhook/centralbrain_agent\n- The Webhook Trigger node is already set to POST.\n",
+        "height": 180,
+        "width": 500
+      },
+      "name": "Webhook Usage Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        380
+      ],
+      "id": "4236b964-afc0-47b4-8ff4-3bba1ca535ab",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        -200,
+        840
+      ],
+      "id": "a2eda4d1-f7c1-4007-8e88-7a198c1452dd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-prover-v2:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        1020
+      ],
+      "id": "45a1c439-3133-48a8-8dd9-13f462d9e003",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "IdHkaZ6b9n8b6If1",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -180,
+        1060
+      ],
+      "id": "9913837f-4ffa-4008-b241-908731ce4835",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "08MaMJRMix6SzDtg",
+          "name": "Postgres account"
+    }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        1100
+      ],
+      "id": "cb847688-af8a-4881-afd1-6b2f87c735bb",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.2,
+      "position": [
+        60,
+        1120
+      ],
+      "id": "7ed1d277-fd47-4e8c-8101-f91aa74984c8",
+      "name": "Code Tool"
+    },
+    {
+      "parameters": {
+        "content": "FIX ME\n\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        820
+      ],
+      "typeVersion": 1,
+      "id": "2c15fee6-9ae6-4174-ba73-c337eb0102da",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {},
+        "content": "// AI Agent Output Contract\n// Always output a JSON object with:\n//   command: string (one of 'freqtrade', 'freqai', 'research', 'utility')\n//   payload: object (additional data for the manager)\n// Example:\n// {\n//   \"command\": \"freqtrade\",\n//   \"payload\": {\n//     \"symbol\": \"BTC/USDT\",\n//     \"action\": \"analyze\"\n//   }\n// }\n// Ensure your prompt or code in the AI Agent node enforces this output structure."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [0, 900],
+      "id": "ai-agent-output-contract",
+      "name": "AI Agent Output Contract Note"
+    }
+  ],
+  "pinData": {
+    "Webhook Trigger": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Command Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route to Manager": {
+      "main": [
+        [
+          {
+            "node": "FreqtradeManager Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [],
+        []
+      ]
+    },
+    "Extract Command Field": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Aggregated Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UtilityManager Request": {
+      "main": [
+        [
+          {
+            "node": "UtilityManager IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResearchManager Request": {
+      "main": [
+        [
+          {
+            "node": "ResearchManager IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqAIManager Request": {
+      "main": [
+        [
+          {
+            "node": "FreqAIManager IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqtradeManager Request": {
+      "main": [
+        [
+          {
+            "node": "FreqtradeManager IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqtradeManager IF": {
+      "main": [
+        [
+          {
+            "node": "FreqtradeManager Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqtradeManager Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Action/Error": {
+      "main": [
+        [
+          {
+            "node": "Log Aggregator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Aggregator": {
+      "main": [
+        [
+          {
+            "node": "Log to Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Handler": {
+      "main": [
+        [
+          {
+            "node": "Log Action/Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unknown Command Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqAIManager IF": {
+      "main": [
+        [
+          {
+            "node": "FreqAIManager Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqAIManager Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResearchManager IF": {
+      "main": [
+        [
+          {
+            "node": "ResearchManager Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResearchManager Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UtilityManager IF": {
+      "main": [
+        [
+          {
+            "node": "UtilityManager Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UtilityManager Error": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "027120d0-6e46-41a1-bffb-a9c8fbebef4d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d993c0f3e3f8d1b2de7570d9d3c4dd91b07329d941a24a470d05536ec26477dd"
+  },
+  "id": "1PtgcZ03tZJvEcI2",
+  "tags": [
+    {
+      "name": "mcp",
+      "id": "RrE5Wpf9crzBUMhS",
+      "createdAt": "2025-05-11T14:25:31.212Z",
+      "updatedAt": "2025-05-11T14:25:31.212Z"
+    }
+  ]
+}

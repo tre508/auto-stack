@@ -1,0 +1,71 @@
+{
+  "name": "Backtest_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "backtest-agent",
+        "responseMode": "onReceived"
+      },
+      "name": "HTTP Request Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "notes": "Receives backtest requests. Input: {strategy, timerange, config}"
+    },
+    {
+      "parameters": {
+        "command": "docker exec freqtrade freqtrade backtesting --strategy {{$json[\"strategy\"]}} --timerange {{$json[\"timerange\"]}} --config {{$json[\"config\"]}}",
+        "options": {}
+      },
+      "name": "Execute Backtest",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "notes": "Runs Freqtrade backtest command."
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse CLI output for metrics\nconst output = $json[\"stdout\"] || \"\";\nconst pnlMatch = output.match(/Total profit: ([\-\d\.]+)%/);\nconst sharpeMatch = output.match(/Sharpe ratio: ([\-\d\.]+)/);\nconst drawdownMatch = output.match(/Max drawdown: ([\-\d\.]+)%/);\nreturn [{json: {pnl: pnlMatch ? pnlMatch[1] : null, sharpe: sharpeMatch ? sharpeMatch[1] : null, drawdown: drawdownMatch ? drawdownMatch[1] : null, status: 'success', error: null}}];"
+      },
+      "name": "Parse Backtest Output",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "notes": "Extracts key metrics from CLI output."
+    },
+    {
+      "parameters": {
+        "table": "agent_logs",
+        "columns": ["agent", "workflow", "action", "status", "details", "error"],
+        "values": [
+          {"agent": "Backtest_Agent", "workflow": "Backtest_Agent", "action": "backtest", "status": "success", "details": "{{$json}}", "error": ""}
+        ]
+      },
+      "name": "Log to Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "notes": "Logs backtest results."
+    },
+    {
+      "parameters": {
+        "responseMode": "lastNode"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1000, 300],
+      "notes": "Returns the parsed backtest results."
+    }
+  ],
+  "connections": {
+    "HTTP Request Trigger": {"main": [[{"node": "Execute Backtest", "type": "main", "index": 0}]]},
+    "Execute Backtest": {"main": [[{"node": "Parse Backtest Output", "type": "main", "index": 0}]]},
+    "Parse Backtest Output": {"main": [[{"node": "Log to Postgres", "type": "main", "index": 0}]]},
+    "Log to Postgres": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {},
+  "id": "backtest-agent-2025"
+} 

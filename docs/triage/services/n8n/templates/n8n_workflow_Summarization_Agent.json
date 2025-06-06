@@ -1,0 +1,68 @@
+{
+  "name": "Summarization_Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "summarization-agent",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "notes": "Receives text to summarize. Input: {text}"
+    },
+    {
+      "parameters": {
+        "values": [{"name": "input_text", "value": "{{$json.text}}"}]
+      },
+      "name": "Set Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "notes": "Maps input text for LLM."
+    },
+    {
+      "parameters": {
+        "model": "llama3",
+        "prompt": "Summarize this for clarity and future reference: {{$json.input_text}}",
+        "baseUrl": "http://openwebui:8080/v1"
+      },
+      "name": "OpenAI LLM",
+      "type": "n8n-nodes-base.openai",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "notes": "Calls LLM to summarize text."
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{json: {summary: $json.choices ? $json.choices[0].message.content : '', status: 'success', error: null}}];"
+      },
+      "name": "Format Output",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "notes": "Formats LLM response."
+    },
+    {
+      "parameters": {
+        "responseMode": "lastNode"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1000, 300],
+      "notes": "Returns the summary."
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {"main": [[{"node": "Set Input", "type": "main", "index": 0}]]},
+    "Set Input": {"main": [[{"node": "OpenAI LLM", "type": "main", "index": 0}]]},
+    "OpenAI LLM": {"main": [[{"node": "Format Output", "type": "main", "index": 0}]]},
+    "Format Output": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {},
+  "id": "summarization-agent-2025"
+} 

@@ -1,0 +1,152 @@
+# ==============================================================================
+# General
+# ==============================================================================
+
+# Operating System / Desktop Environment Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Editor & IDE specific
+.vscode/
+.idea/
+*.swp
+*.swo
+# For Cursor.AI if it creates project-specific metadata
+.cursor/
+
+# Temporary & Backup Files
+*.tmp
+*.bak
+*.old
+*.log
+*.pid
+
+# Secrets - Local environment variables
+.env
+.env.*.local
+*.env.local
+
+# ==============================================================================
+# Python
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+sdist/
+*.egg
+wheels/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/ # Note: also matches .env file, but .env is explicitly listed above for secrets
+
+# Test & Coverage Reports
+*.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# ==============================================================================
+# Node.js / JavaScript / TypeScript
+# ==============================================================================
+
+# Dependencies
+node_modules/
+controller/node_modules/
+freq-chat/node_modules/
+openrouter_proxy/node_modules/
+
+# Lockfiles (if generated locally and not part of a strict policy)
+# pnpm-lock.yaml # Usually committed
+# package-lock.json # Usually committed
+# yarn.lock # Usually committed
+
+# Build output / Transpiled files
+# (Specific project build outputs are listed in their sections)
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==============================================================================
+# freq-chat (Next.js Specific)
+# ==============================================================================
+freq-chat/.next/
+freq-chat/out/ # For static exports
+freq-chat/coverage/
+freq-chat/playwright-report/
+freq-chat/test-results/
+# freq-chat/.env.local, .env.development.local, .env.production.local (covered by global .env.*.local)
+# freq-chat/.DS_Store (covered by global .DS_Store)
+freq-chat/.biome/ # If BiomeJS creates a local cache/report directory
+
+# ==============================================================================
+# Docker
+# ==============================================================================
+
+# Local Docker Compose overrides
+docker-compose.override.yml
+
+# Persistent Data Volumes (actual directories used by services)
+n8n_data/
+mem0_data/
+ollama_data/
+pgdata/
+# Any other similar data directories mounted from host into containers
+
+# ==============================================================================
+# n8n Specific (Data directory is covered by n8n_data/ above)
+# ==============================================================================
+# If n8n generates specific cache or temp files outside n8n_data/
+# (The old rules for n8n/database.sqlite* and n8n/.env are removed as n8n_data/ is used)
+
+# ==============================================================================
+# Documentation & Generated Files
+# ==============================================================================
+docs/depreciated/
+docs/main-env.md
+docs/backups/
+docs/exports/
+exports/ # If used as a general export folder at root
+
+# Auto-generated markdown files (if any)
+*.autogen.md
+docs/**/README_gen.md # If README_gen.md are specifically generated
+
+# PDFs (if generated and not source material)
+# *.pdf # Consider if any PDFs in the repo are meant to be versioned
+
+# ==============================================================================
+# Optional / Project Specific
+# ==============================================================================
+
+# Example: Tags directory if used for local tag snapshots
+# tags/
+
+# Example: Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Example: Terraform state files
+# .terraform/
+# *.tfstate
+# *.tfstate.backup
+
+# ==============================================================================
+# Files that should NOT be ignored (override general rules if necessary)
+# ==============================================================================
+# Example:
+# !important.log
+# !.env.example

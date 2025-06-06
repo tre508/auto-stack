@@ -1,0 +1,84 @@
+{
+  "name": "Delete Qdrant Collection",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "delete-qdrant-collection",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        580,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Trigger for deleting Qdrant collection"
+    },
+    {
+      "parameters": {
+        "url": "http://qdrant_mcp:6333/collections/mem0_autostack_collection",
+        "method": "DELETE",
+        "options": {
+          "fullResponse": false
+        },
+        "authentication": "none",
+        "sendHeaders": true
+      },
+      "name": "Delete Qdrant Collection",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        800,
+        300
+      ],
+      "typeVersion": 4.1,
+      "description": "Sends DELETE request to remove the Qdrant collection",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "respondWithData": true,
+        "responseData": {
+          "message": "Qdrant collection deletion attempted. Please check logs for confirmation."
+        }
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1020,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Returns confirmation message"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Delete Qdrant Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Qdrant Collection": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["mem0", "qdrant", "vector-db", "maintenance"],
+  "version": 2
+} 

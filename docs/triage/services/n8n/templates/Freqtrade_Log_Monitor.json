@@ -1,0 +1,141 @@
+{
+  "name": "Freqtrade Log Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "value": 5
+            }
+          ]
+        }
+      },
+      "name": "Run Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "docker compose -f /workspace/compose-freqtrade.yml logs --tail=50 freqtrade", 
+        "executeIn": "docker",
+        "options": {}
+      },
+      "name": "Get Latest Freqtrade Logs",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        300
+      ],
+       "notes": "Assumes freqtrade docker-compose is at /workspace/compose-freqtrade.yml relative to host mount."
+    },
+    {
+        "parameters": {
+            "conditions": {
+                 "string": [
+                    {
+                        "value1": "={{ $json.stdout }}",
+                        "operation": "contains",
+                        "value2": "ERROR"
+                    }
+                ]
+            }
+        },
+        "name": "Check for Errors",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+            1200,
+            300
+        ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CONTROLLER_URL || 'http://host.docker.internal:5001' }}/notify", 
+        "options": {
+          "bodyContentType": "json"
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "level",
+              "value": "error"
+            },
+            {
+              "name": "source",
+              "value": "Freqtrade Log Monitor"
+            },
+             {
+              "name": "message",
+              "value": "={{ $json.stdout }}" 
+            }
+          ]
+        },
+        "displayResponse": false
+      },
+      "name": "Notify Controller of Error",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1400,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Run Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Freqtrade Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Freqtrade Logs": {
+        "main": [
+            [
+                {
+                    "node": "Check for Errors",
+                    "type": "main",
+                    "index": 0
+                }
+            ]
+        ]
+    },
+    "Check for Errors": {
+        "main": [
+            [
+                {
+                    "node": "Notify Controller of Error",
+                    "type": "main",
+                    "index": 0
+                }
+            ]
+        ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "versionId": "placeholder-version-id",
+  "tags": ["Freqtrade", "Logs", "Monitor", "Error"]
+} 

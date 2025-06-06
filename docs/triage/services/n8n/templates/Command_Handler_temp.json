@@ -1,0 +1,304 @@
+{
+  "name": "Command Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/command-handler",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        420
+      ],
+      "webhookId": "placeholder-webhook-id",
+      "id": "d7463d16-76ed-4587-af41-79ab12c97df7",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "6nU2hM4MBbGIgtc2",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.chatInput }}",
+              "operation": "startsWith",
+              "value2": "cursor:"
+            }
+          ]
+        }
+      },
+      "name": "Is Cursor Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        180
+      ],
+      "id": "a9403409-dfd7-4a1f-bf53-f33927bd9641"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CONTROLLER_URL || 'http://host.docker.internal:5001' }}/execute",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "command",
+              "value": "={{ $json.body.chatInput }}"
+            },
+            {
+              "name": "args",
+              "value": "={{ $json.body.args || {} }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Send to Automation Controller",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        120,
+        120
+      ],
+      "id": "445473e0-ef7d-4454-8c02-84741004eef3",
+      "notes": "Sends commands prefixed with 'cursor:' to the controller script running on the host."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.chatInput }}",
+              "operation": "startsWith",
+              "value2": "n8n:"
+            }
+          ]
+        }
+      },
+      "name": "Is n8n Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        620
+      ],
+      "id": "100ec3d4-b441-46d3-a20a-823fab08e673"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatInput = $json.body.chatInput;\nlet command = '';\nlet args = {};\n\nif (chatInput && chatInput.startsWith('n8n:')) {\n  const parts = chatInput.substring(4).trim().split(/\\s+/);\n  command = parts[0];\n  if (parts.length > 1) {\n    args.fullArgsString = parts.slice(1).join(' ');\n    if (command === 'run_freqtrade_task' && parts[1]) {\n        args.task = parts[1]; \n        args.params = parts.slice(2).join(' ');\n    }\n  }\n}\n\nreturn [{ json: { parsed_command: command, parsed_args: args, body: $json.body } }];"
+      },
+      "name": "Parse n8n Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        100,
+        420
+      ],
+      "id": "2cf3bbd4-5ece-4102-890e-6c9c9825b3f5"
+    },
+    {
+      "parameters": {},
+      "name": "Switch n8n Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        320,
+        480
+      ],
+      "id": "60e19ba7-571d-4448-b323-5f539b8b6f0e"
+    },
+    {
+      "parameters": {},
+      "name": "Execute Doc Sync",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        20
+      ],
+      "id": "d1fa9fd6-0c42-454a-8920-55bba2195a24",
+      "notes": "Executes the Document Synchronization workflow."
+    },
+    {
+      "parameters": {},
+      "name": "Execute Freqtrade Task Runner",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        220
+      ],
+      "id": "3aecd5f1-c7d2-4d61-b7b4-1f2638d376d6",
+      "notes": "Executes the Freqtrade Task Runner workflow."
+    },
+    {
+      "parameters": {},
+      "name": "Execute Freq Log",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        420
+      ],
+      "id": "5d41b538-57a9-4189-ba50-1de07fd781ab",
+      "notes": "Executes the Freqtrade Log Monitoring workflow."
+    },
+    {
+      "parameters": {},
+      "name": "Execute Stock Analysis",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        620
+      ],
+      "id": "c83c95ae-a3d8-41b4-a79b-2ed853910233",
+      "notes": "Executes the Stock Analysis workflow."
+    },
+    {
+      "parameters": {},
+      "name": "Execute MCP Server",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 2,
+      "position": [
+        520,
+        820
+      ],
+      "id": "3d2649d2-5185-4dde-a10e-930e3dbbefb2",
+      "notes": "Executes the MCP Server workflow. Replace placeholder ID."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "output",
+              "value": "={{ { \"message\": \"Command not recognized or no specific action taken.\" } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Default LLM/NoOp Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        420
+      ],
+      "id": "368986e6-c2c8-4c2d-9bdf-d09b7bb8a07b",
+      "notes": "Default response if no command branches are hit, or for passthrough to LLM."
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        820,
+        420
+      ],
+      "id": "59ed6691-82e8-4614-955f-145a11a19dbb",
+      "name": "Execute Workflow"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Cursor Command?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Is n8n Command?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Cursor Command?": {
+      "main": [
+        [
+          {
+            "node": "Send to Automation Controller",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default LLM/NoOp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is n8n Command?": {
+      "main": [
+        [
+          {
+            "node": "Parse n8n Command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default LLM/NoOp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse n8n Command": {
+      "main": [
+        [
+          {
+            "node": "Switch n8n Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e09ace52-aa6b-4438-a706-6662214e2de0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "15ab7c3ee49264d48ddd2d932cc79b4ad6a1b202d65ea361b397af428cd4e519"
+  },
+  "id": "TZRdP2iA6PMERux2",
+  "tags": []
+}

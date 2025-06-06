@@ -1,0 +1,74 @@
+{
+  "name": "Docker_Health_Check",
+  "nodes": [
+    {
+      "parameters": {
+        "cronExpression": "0 7 * * *"
+      },
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [200, 300],
+      "notes": "Runs daily at 7:00 AM."
+    },
+    {
+      "parameters": {
+        "command": "docker ps --filter 'name=n8n_mcp' --filter 'status=running' --format '{{.Names}}'; docker ps --filter 'name=openwebui_mcp' --filter 'status=running' --format '{{.Names}}'; docker ps --filter 'name=traefik_mcp' --filter 'status=running' --format '{{.Names}}'",
+        "options": {}
+      },
+      "name": "Check Containers",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [400, 300],
+      "notes": "Checks if critical containers are running."
+    },
+    {
+      "parameters": {
+        "functionCode": "const expected = ['n8n_mcp', 'openwebui_mcp', 'traefik_mcp'];\nconst found = ($json.stdout || '').split(/\n/).filter(Boolean);\nconst down = expected.filter(x => !found.includes(x));\nreturn [{json: {down_containers: down, status: down.length ? 'alert' : 'ok', alert_sent: false}}];"
+      },
+      "name": "Parse Status",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "notes": "Identifies non-running containers."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{"value1": "={{$json.down_containers.length}}", "operation": "notEqual", "value2": "0"}]
+        }
+      },
+      "name": "IF Down Containers",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [800, 300],
+      "notes": "Checks if any containers are down."
+    },
+    {
+      "parameters": {
+        "url": "http://notification_endpoint/alert",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"down_containers\": {{$json.down_containers}}, \"status\": \"alert\"}"
+      },
+      "name": "Send Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1000, 200],
+      "notes": "Sends alert if containers are down."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {"main": [[{"node": "Check Containers", "type": "main", "index": 0}]]},
+    "Check Containers": {"main": [[{"node": "Parse Status", "type": "main", "index": 0}]]},
+    "Parse Status": {"main": [[{"node": "IF Down Containers", "type": "main", "index": 0}]]},
+    "IF Down Containers": {"main": [
+      [{"node": "Send Alert", "type": "main", "index": 0}],
+      []
+    ]}
+  },
+  "active": false,
+  "settings": {},
+  "id": "docker-health-check-2025"
+} 

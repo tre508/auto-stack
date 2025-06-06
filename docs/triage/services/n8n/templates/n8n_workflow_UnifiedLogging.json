@@ -1,0 +1,219 @@
+{
+  "name": "Unified Logging",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"agent_name\": \"ExampleAgentName\",\n  \"calling_workflow_name\": \"NameOfWorkflowThatCalledThis\",\n  \"action\": \"Performed an action\",\n  \"event_type\": \"log_event\",\n  \"message\": \"This is the main log message about the action.\",\n  \"run_id\": \"run-abc-123\",\n  \"status\": \"success\",\n  \"error\": null,\n  \"metadata\": {\n    \"key1\": \"value1\",\n    \"some_metric\": 123,\n    \"additional_info\": \"more data\"\n  }\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -20
+      ],
+      "id": "7d0cb74f-7ef6-42d3-97be-b21e00a99eb7",
+      "name": "Subworkflow Trigger"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "agent_logs",
+          "mode": "list",
+          "cachedResultName": "agent_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "agent_name": "={{$json.agent_name}}",
+            "event_type": "={{$json.event_type}}",
+            "run_id": "={{$json.run_id}}",
+            "message": "={{$json.message}}",
+            "status": "={{$json.status}}",
+            "metadata": "={{ $json.metadata }}",
+            "workflow": "={{$json.calling_workflow_name}}",
+            "error": "={{$json.error}}",
+            "action": "={{$json.action}}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "agent_name",
+              "displayName": "agent_name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "metadata",
+              "displayName": "metadata",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        220,
+        0
+      ],
+      "id": "1496e418-5d83-4385-955c-1733f381e4a0",
+      "name": "Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Subworkflow Trigger": [
+      {
+        "json": {
+          "agent_name": "MyTestAgent",
+          "calling_workflow_name": "Test Caller",
+          "action": "Performed an action",
+          "event_type": "log_event",
+          "message": "This is the main log message about the action.",
+          "run_id": "run-abc-123",
+          "status": "success",
+          "error": null,
+          "metadata": {
+            "key1": "value1",
+            "some_metric": 123,
+            "additional_info": "more data"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Subworkflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "359e0857-9f50-4626-b4d3-d853679d9916",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cdc797372b4e55e3ab2507a143f0ba58519bb2cbe9c89bdcbeb072065c3546c"
+  },
+  "id": "knCkuu3VRNYZbSTa",
+  "tags": []
+}

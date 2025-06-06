@@ -1,0 +1,29 @@
+# Set default behavior, in case users don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always normalize to LF in the repo
+*.txt text
+*.md text
+*.json text
+*.yaml text
+*.yml text
+*.py text
+*.js text
+*.ts text
+*.tsx text
+*.html text
+*.css text
+*.scss text
+*.sh text
+*.gitignore text
+*.gitattributes text
+Dockerfile text
+
+# Declare files that should not be touched (binary files)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+# Add other binary file extensions as needed

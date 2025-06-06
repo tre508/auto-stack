@@ -1,0 +1,61 @@
+{
+  "name": "Doc Mirror Update",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "value": 6
+            }
+          ]
+        }
+      },
+      "name": "Run Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "cd /host_vault/docs/OpenWebUI_Docs && git pull && cd /host_vault/docs/n8n_Docs && git pull && cd /host_vault/docs/Ollama_Docs && git pull && cd /host_vault/docs/Freqtrade_Docs && git pull",
+        "executeIn": "docker",
+        "options": {}
+      },
+      "name": "Git Pull All Docs",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        300
+      ],
+      "notes": "Ensure the vault path (e.g., /mnt/c/Users/glenn/FreqVault/FreqVault) is mounted to /host_vault in the n8n container's docker-compose service definition."
+    }
+  ],
+  "connections": {
+    "Run Every 6 Hours": {
+      "main": [
+        [
+          {
+            "node": "Git Pull All Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "versionId": "placeholder-version-id",
+  "tags": [
+    "Docs",
+    "Sync",
+    "Git"
+  ]
+}

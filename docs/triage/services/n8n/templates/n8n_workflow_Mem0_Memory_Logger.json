@@ -1,0 +1,189 @@
+{
+  "name": "Mem0 Memory Event Logger",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mem0-memory-event",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        580,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Endpoint for capturing memory events"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "jsCode": "// Log structure: timestamp, event_type, content, metadata\nconst data = $input.item.json;\nconst timestamp = new Date().toISOString();\nconst eventType = data.event_type || 'unknown';\nconst content = data.content || '';\nconst metadata = JSON.stringify(data.metadata || {});\n\n// Add unique ID\nconst uuid = (Date.now().toString(36) + Math.random().toString(36).substr(2, 5)).toUpperCase();\n\nreturn {\n  timestamp,\n  event_id: uuid,\n  event_type: eventType,\n  content: content,\n  metadata: metadata\n};"
+      },
+      "name": "Format Log Entry",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        800,
+        300
+      ],
+      "typeVersion": 2,
+      "description": "Formats the memory event for database storage"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "mem0_memory_events",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "event_id": "={{ $json.event_id }}",
+            "event_type": "={{ $json.event_type }}",
+            "content": "={{ $json.content }}",
+            "metadata": "={{ $json.metadata }}"
+          }
+        },
+        "returnFields": "id, timestamp, event_id",
+        "additionalFields": {}
+      },
+      "name": "Log to Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1020,
+        300
+      ],
+      "typeVersion": 2.6,
+      "credentials": {
+        "postgres": {
+          "id": "postgres_logging_credentials",
+          "name": "Postgres Logging"
+        }
+      },
+      "description": "Insert event into Postgres database",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.event_type === 'insert' || $json.event_type === 'update' }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Is Content Creation/Update?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1240,
+        300
+      ],
+      "typeVersion": 2,
+      "description": "Only trigger file backup for content creation/updates"
+    },
+    {
+      "parameters": {
+        "filePath": "={{ '/data/mem0_backups/' + $json.event_id + '.json' }}",
+        "options": {
+          "append": false
+        }
+      },
+      "name": "Backup to File",
+      "type": "n8n-nodes-base.writeFile",
+      "position": [
+        1460,
+        200
+      ],
+      "typeVersion": 2,
+      "description": "Create backup JSON file for the memory entry"
+    },
+    {
+      "parameters": {
+        "respondWithData": true,
+        "responseData": {
+          "result": "success",
+          "message": "Memory event logged successfully"
+        }
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1660,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Return success response"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Log Entry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Log Entry": {
+      "main": [
+        [
+          {
+            "node": "Log to Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Postgres": {
+      "main": [
+        [
+          {
+            "node": "Is Content Creation/Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Content Creation/Update?": {
+      "main": [
+        [
+          {
+            "node": "Backup to File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backup to File": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["mem0", "logging", "backup"],
+  "version": 2
+} 

@@ -1,0 +1,132 @@
+{
+  "name": "Freqtrade Task Runner",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "On Workflow Call",
+      "type": "n8n-nodes-base.workflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.task || $json.query.task }}",
+              "operation": "contains",
+              "value2": "backtest"
+            }
+          ]
+        }
+      },
+      "name": "Is Backtest?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "command": "docker compose -f /workspace/compose-freqtrade.yml run --rm freqtrade backtesting --config /freqtrade/user_data/config.json --strategy={{ $json.body.strategy || $json.query.strategy || 'SampleStrategy' }}",
+        "executeIn": "docker",
+        "options": {}
+      },
+      "name": "Run Backtest",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        200
+      ],
+      "notes": "Requires strategy name in payload (body.strategy or query.strategy). Assumes freqtrade docker-compose is at /workspace/compose-freqtrade.yml relative to host mount."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.task || $json.query.task }}",
+              "operation": "contains",
+              "value2": "hyperopt"
+            }
+          ]
+        }
+      },
+      "name": "Is Hyperopt?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "command": "docker compose -f /workspace/compose-freqtrade.yml run --rm freqtrade hyperopt --config /freqtrade/user_data/config.json --strategy={{ $json.body.strategy || $json.query.strategy || 'SampleStrategy' }} --epochs={{ $json.body.epochs || $json.query.epochs || 10 }} --spaces buy sell roi stoploss trailing",
+        "executeIn": "docker",
+        "options": {}
+      },
+      "name": "Run Hyperopt",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        400
+      ],
+      "notes": "Requires strategy name (optional epochs) in payload. Assumes freqtrade docker-compose is at /workspace/compose-freqtrade.yml relative to host mount."
+    }
+  ],
+  "connections": {
+    "On Workflow Call": {
+      "main": [
+        [
+          {
+            "node": "Is Backtest?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Hyperopt?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Backtest?": {
+      "main": [
+        [
+          {
+            "node": "Run Backtest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Hyperopt?": {
+      "main": [
+        [
+          {
+            "node": "Run Hyperopt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "versionId": "placeholder-version-id",
+  "tags": ["Freqtrade", "Task", "Backtest", "Hyperopt"]
+} 

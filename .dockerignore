@@ -1,0 +1,83 @@
+# Git
+.git
+.gitignore
+.gitattributes
+.gitmodules
+
+# Node
+node_modules
+*/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml # Keep if installing deps in Docker, ignore if copying host node_modules
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.nox/
+.hypothesis/
+.pytest_cache/
+instance/ # Flask instance folder
+
+# Docker
+Dockerfile # Often kept, but can be ignored if using a specific one from .cursor
+docker-compose.yml # If not used for the build itself
+
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Build artifacts
+dist/
+build/
+target/
+out/
+coverage/
+.nyc_output/
+
+# Environment files (sensitive, should not be in image)
+.env
+.env.*
+!.env.example # Keep example files
+
+# Cursor specific (if not needed in image)
+# .cursor/ # This contains the Dockerfile we are using, so don't ignore all of it.
+# We can be more specific if needed, e.g., .cursor/some_other_file_not_needed
+
+# Temp files
+tmp/
+
+# MCP Data (if persisted outside image or managed by volumes)
+# n8n_data/
+# pgdata/
+
+# Specific to this project if they are large and not needed or rebuilt in image
+# freq-chat/app/
+# freq-chat/components/
+# freq-chat/lib/
+# freq-chat/public/
+# freq-chat/tests/
+# mem0/server/

@@ -1,0 +1,7 @@
+mem0ai==0.1.101
+fastapi
+uvicorn[standard]
+qdrant-client
+psycopg2-binary # Include if using PostgreSQL
+openai # For OpenRouter via OpenAI provider
+sentence-transformers

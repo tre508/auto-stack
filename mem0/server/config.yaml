@@ -1,0 +1,48 @@
+# mem0/server/config.yaml
+
+# --- Vector Store ---
+vectorstore:
+  provider: "qdrant"
+  config:
+    host: "qdrant_mcp" # Service name of Qdrant in Docker Compose network
+    port: 6333
+    collection: "mem0_autostack_collection" # Or your preferred collection name
+
+# --- LLM Configuration ---
+# Uses the "openai" provider type. The actual endpoint and API key are determined
+# by OPENAI_BASE_URL and OPENAI_API_KEY environment variables set in docker-compose.yml,
+# pointing to your OpenRouter proxy.
+llm:
+  provider: "openai"
+  config:
+    model: "tngtech/deepseek-r1t-chimera:free" # Example: Choose a model available on OpenRouter
+    # temperature: 0.7 # Optional
+
+# --- Embedder Configuration ---
+# Using BAAI/bge-base-en-v1.5 model via a custom OpenAI-compatible API (HF Space)
+embedder:
+  provider: "openai" # Changed to use OpenAI client logic
+  config:
+    model: "BAAI/bge-base-en-v1.5" # This model name will be sent to your HF Space API
+    # The actual endpoint and API key are determined by
+    # OPENAI_BASE_URL and OPENAI_API_KEY environment variables,
+    # which you will set to point to your Hugging Face Space and HF Token.
+
+# --- Graph Store (Optional) ---
+# If you want to use a graph database (e.g., Neo4j), uncomment and configure.
+# Ensure the Neo4j service is also defined in compose-mcp.yml and env vars are set.
+# graph_store:
+#   provider: "neo4j"
+#   config:
+#     uri: ${NEO4J_URI} # e.g., bolt://neo4j_mcp:7687
+#     user: ${NEO4J_USER}
+#     password: ${NEO4J_PASSWORD}
+
+# --- History Database (Optional) ---
+# Defaults to an in-memory SQLite database if not specified.
+# For persistence, use a file path that maps to a Docker volume.
+history_db_path: "/data/mem0_history.db" # Path inside the container, mapped to mem0_data_mcp volume
+
+# --- Other Configurations (Optional) ---
+# verbose: true
+# log_level: "INFO"

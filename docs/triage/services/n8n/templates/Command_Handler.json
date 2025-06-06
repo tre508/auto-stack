@@ -1,0 +1,370 @@
+{
+  "name": "Command Handler (Webhook -> Controller & Sub-Workflows)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook/command-handler",
+        "responseMode": "lastNode",
+        "authentication": "headerAuth",
+        "options": {},
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "placeholder-credential-id",
+            "name": "N8N API Key Auth"
+          }
+        }
+      },
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        800,
+        500
+      ],
+      "webhookId": "placeholder-webhook-id"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.chatInput }}",
+              "operation": "startsWith",
+              "value2": "cursor:"
+            }
+          ]
+        }
+      },
+      "name": "Is Cursor Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.CONTROLLER_URL || 'http://host.docker.internal:5001' }}/execute",
+        "options": {
+          "bodyContentType": "json"
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "command",
+              "value": "={{ $json.body.chatInput }}"
+            },
+            {
+              "name": "args",
+              "value": "={{ $json.body.args || {} }}"
+            }
+          ]
+        },
+        "displayResponse": false
+      },
+      "name": "Send to Automation Controller",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1280,
+        200
+      ],
+      "notes": "Sends commands prefixed with 'cursor:' to the controller script running on the host."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.chatInput }}",
+              "operation": "startsWith",
+              "value2": "n8n:"
+            }
+          ]
+        }
+      },
+      "name": "Is n8n Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatInput = $json.body.chatInput;\nlet command = '';\nlet args = {};\n\nif (chatInput && chatInput.startsWith('n8n:')) {\n  const parts = chatInput.substring(4).trim().split(/\\s+/);\n  command = parts[0];\n  if (parts.length > 1) {\n    args.fullArgsString = parts.slice(1).join(' ');\n    if (command === 'run_freqtrade_task' && parts[1]) {\n        args.task = parts[1]; \n        args.params = parts.slice(2).join(' ');\n    }\n  }\n}\n\nreturn [{ json: { parsed_command: command, parsed_args: args, body: $json.body } }];"
+      },
+      "name": "Parse n8n Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToTest": "={{ $json.parsed_command }}",
+        "routingRules": {
+          "rules": [
+            {
+              "value": "pull_docs",
+              "output": 0
+            },
+            {
+              "value": "run_freqtrade_task",
+              "output": 1
+            },
+            {
+              "value": "run_freq_log",
+              "output": 2
+            },
+            {
+              "value": "run_stock_analysis",
+              "output": 3
+            },
+            {
+              "value": "run_mcp_server",
+              "output": 4
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Switch n8n Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        700
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": "GoIqBearH6MIKti8",
+        "mode": "runOnceWithAllItems",
+        "options": {}
+      },
+      "name": "Execute Doc Sync",
+      "type": "n8n-nodes-base.executeWorkflow", 
+      "typeVersion": 1.2, 
+      "position": [
+        1760,
+        400
+      ],
+      "notes": "Executes the Document Synchronization workflow."
+    },
+    {
+      "parameters": {
+        "workflowId": "yx1JXiNhm149RlNI",
+        "mode": "runOnceWithAllItems",
+        "options": {}
+      },
+      "name": "Execute Freqtrade Task Runner",
+      "type": "n8n-nodes-base.executeWorkflow", 
+      "typeVersion": 1.2, 
+      "position": [
+        1760,
+        600
+      ],
+      "notes": "Executes the Freqtrade Task Runner workflow."
+    },
+    {
+      "parameters": {
+        "workflowId": "uhJUcm1XmurFPmqb",
+        "mode": "runOnceWithAllItems",
+        "options": {}
+      },
+      "name": "Execute Freq Log",
+      "type": "n8n-nodes-base.executeWorkflow", 
+      "typeVersion": 1.2, 
+      "position": [
+        1760,
+        800
+      ],
+      "notes": "Executes the Freqtrade Log Monitoring workflow."
+    },
+    {
+      "parameters": {
+        "workflowId": "LeqDHl2ocBmxCt4u",
+        "mode": "runOnceWithAllItems",
+        "options": {}
+      },
+      "name": "Execute Stock Analysis",
+      "type": "n8n-nodes-base.executeWorkflow", 
+      "typeVersion": 1.2, 
+      "position": [
+        1760,
+        1000
+      ],
+      "notes": "Executes the Stock Analysis workflow."
+    },
+    {
+      "parameters": {
+        "workflowId": "GF61gR0NOdNodRN_PLACEHOLDER",
+        "mode": "runOnceWithAllItems",
+        "options": {}
+      },
+      "name": "Execute MCP Server",
+      "type": "n8n-nodes-base.executeWorkflow", 
+      "typeVersion": 1.2, 
+      "position": [
+        1760,
+        1200
+      ],
+      "notes": "Executes the MCP Server workflow. Replace placeholder ID."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "output",
+              "value": "={{ { \"message\": \"Command not recognized or no specific action taken.\" } }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Default LLM/NoOp Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        1000 
+      ],
+      "notes": "Default response if no command branches are hit, or for passthrough to LLM."
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Cursor Command?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is n8n Command?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Cursor Command?": {
+      "main": [
+        [
+          {
+            "node": "Send to Automation Controller",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default LLM/NoOp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is n8n Command?": {
+      "main": [
+        [
+          {
+            "node": "Parse n8n Command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Default LLM/NoOp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse n8n Command": {
+      "main": [
+        [
+          {
+            "node": "Switch n8n Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch n8n Command": {
+      "main": [
+        [
+          {
+            "node": "Execute Doc Sync",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Freqtrade Task Runner",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Freq Log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute Stock Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute MCP Server",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+           {
+            "node": "Default LLM/NoOp Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "pinData": {},
+  "versionId": "placeholder-new-version-id",
+  "tags": ["Webhook", "Controller", "Routing", "Sub-Workflow"]
+} 

@@ -1,0 +1,3 @@
+[submodule "freq-chat"]
+	path = freq-chat
+	url = git@github.com:tre508/freq-chat.git

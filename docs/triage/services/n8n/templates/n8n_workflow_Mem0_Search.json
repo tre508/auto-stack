@@ -1,0 +1,133 @@
+{
+  "name": "Mem0 Search with BGE Prompt Wrapping",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mem0-search",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        580,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Trigger endpoint for Mem0 search"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "query",
+              "value": "={{ \"Represent this sentence for searching relevant passages: \" + $json[\"query\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set Query with BGE Prompt Wrapper",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        800,
+        300
+      ],
+      "typeVersion": 3.2,
+      "description": "Prepends the BGE prompt wrapper to improve embedding quality"
+    },
+    {
+      "parameters": {
+        "url": "http://mem0_mcp:7860/api/search",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "limit",
+              "value": 5
+            }
+          ]
+        },
+        "options": {
+          "fullResponse": false
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        }
+      },
+      "name": "Search Memory in Mem0",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1020,
+        300
+      ],
+      "typeVersion": 4.1,
+      "description": "Sends the search request to Mem0"
+    },
+    {
+      "parameters": {
+        "respondWithData": true
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1240,
+        300
+      ],
+      "typeVersion": 1,
+      "description": "Returns search results"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Query with BGE Prompt Wrapper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Query with BGE Prompt Wrapper": {
+      "main": [
+        [
+          {
+            "node": "Search Memory in Mem0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Memory in Mem0": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "tags": ["mem0", "search", "bge-embeddings"],
+  "version": 2
+} 
