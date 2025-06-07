@@ -72,15 +72,17 @@ services:
       - "/d/docker-volumes/hf_cache:/tmp/huggingface_cache" # Persist downloaded models on D:
     networks:
       - auto-stack-net
-    ports: # Optional: expose directly if needed for testing, otherwise let Traefik handle it
+    ports:
+      # Optional: expose directly if needed for testing, otherwise let Traefik handle it
       - "7861:7860" # Exposing on 7861 to avoid conflict if something else uses 7860
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.bge_embedding_auto.rule=Host(`${BGE_EMBEDDING_TRAEFIK_HOST:-bge.localhost}`)"
       - "traefik.http.routers.bge_embedding_auto.entrypoints=web"
       - "traefik.http.services.bge_embedding_auto.loadbalancer.server.port=7860" # Internal port of bge service
-    healthcheck: # From its Dockerfile
-      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+    healthcheck:
+      # From its Dockerfile
+      test: [ "CMD", "curl", "-f", "http://localhost:7860/health" ]
       interval: 30s
       timeout: 30s
       retries: 3
@@ -216,7 +218,8 @@ services:
         - POSTGRES_URL_BUILD_ARG=postgresql://freqchat_user:7453@postgres_logging_auto:5432/freqchat_db
     container_name: freq_chat_auto
     restart: unless-stopped
-    env_file: # Freq-Chat's Next.js app should pick up .env.development.local or .env.production
+    env_file:
+      # Freq-Chat's Next.js app should pick up .env.development.local or .env.production
       - ./freq-chat/.env.development.local # Or .env.production depending on NODE_ENV
     environment:
       - NODE_ENV=${NODE_ENV:-development}

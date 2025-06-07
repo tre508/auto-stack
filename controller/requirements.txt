@@ -1,4 +1,5 @@
 fastapi
 uvicorn[standard]
 httpx
+requests
 # mem0ai # Removed as controller now uses HTTP to talk to mem0_mcp service 
