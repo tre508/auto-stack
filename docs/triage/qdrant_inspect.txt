@@ -1,0 +1,268 @@
+{
+    "AppArmorProfile": "",
+    "Args": [],
+    "Config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+            "./entrypoint.sh"
+        ],
+        "Domainname": "",
+        "Entrypoint": null,
+        "Env": [
+            "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+            "DIR=",
+            "TZ=Etc/UTC",
+            "RUN_MODE=production"
+        ],
+        "ExposedPorts": {
+            "6333/tcp": {},
+            "6334/tcp": {}
+        },
+        "Hostname": "b214383f069e",
+        "Image": "qdrant/qdrant:latest",
+        "Labels": {
+            "com.docker.compose.config-hash": "1159db20cd74368d5549a1f7dcac1ed05ffbc803ec962e247633348f06b37430",
+            "com.docker.compose.container-number": "1",
+            "com.docker.compose.depends_on": "",
+            "com.docker.compose.image": "sha256:419d72603f5346ee22ffc4606bdb7beb52fcb63077766fab678e6622ba247366",
+            "com.docker.compose.oneoff": "False",
+            "com.docker.compose.project": "auto-stack",
+            "com.docker.compose.project.config_files": "/home/glenn/projects/auto-stack/docker-compose.yml",
+            "com.docker.compose.project.working_dir": "/home/glenn/projects/auto-stack",
+            "com.docker.compose.service": "qdrant_auto",
+            "com.docker.compose.version": "2.36.2",
+            "desktop.docker.io/wsl-distro": "Ubuntu-24.04",
+            "org.opencontainers.image.description": "Official Qdrant image",
+            "org.opencontainers.image.documentation": "https://qdrant.com/docs",
+            "org.opencontainers.image.source": "https://github.com/qdrant/qdrant",
+            "org.opencontainers.image.title": "Qdrant",
+            "org.opencontainers.image.url": "https://qdrant.com/",
+            "org.opencontainers.image.vendor": "Qdrant",
+            "org.opencontainers.image.version": "v1.14.1"
+        },
+        "OnBuild": null,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Tty": false,
+        "User": "0:0",
+        "Volumes": null,
+        "WorkingDir": "/qdrant"
+    },
+    "Created": "2025-06-06T22:31:39.592229372Z",
+    "Driver": "overlayfs",
+    "ExecIDs": null,
+    "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+    },
+    "HostConfig": {
+        "AutoRemove": false,
+        "Binds": [
+            "/d/docker-volumes/qdrant_storage:/qdrant/storage:rw"
+        ],
+        "BlkioDeviceReadBps": null,
+        "BlkioDeviceReadIOps": null,
+        "BlkioDeviceWriteBps": null,
+        "BlkioDeviceWriteIOps": null,
+        "BlkioWeight": 0,
+        "BlkioWeightDevice": null,
+        "CapAdd": null,
+        "CapDrop": null,
+        "Cgroup": "",
+        "CgroupParent": "",
+        "CgroupnsMode": "private",
+        "ConsoleSize": [
+            0,
+            0
+        ],
+        "ContainerIDFile": "",
+        "CpuCount": 0,
+        "CpuPercent": 0,
+        "CpuPeriod": 0,
+        "CpuQuota": 0,
+        "CpuRealtimePeriod": 0,
+        "CpuRealtimeRuntime": 0,
+        "CpuShares": 0,
+        "CpusetCpus": "",
+        "CpusetMems": "",
+        "DeviceCgroupRules": null,
+        "DeviceRequests": null,
+        "Devices": null,
+        "Dns": [],
+        "DnsOptions": [],
+        "DnsSearch": [],
+        "ExtraHosts": [],
+        "GroupAdd": null,
+        "IOMaximumBandwidth": 0,
+        "IOMaximumIOps": 0,
+        "IpcMode": "private",
+        "Isolation": "",
+        "Links": null,
+        "LogConfig": {
+            "Config": {},
+            "Type": "json-file"
+        },
+        "MaskedPaths": [
+            "/proc/asound",
+            "/proc/acpi",
+            "/proc/interrupts",
+            "/proc/kcore",
+            "/proc/keys",
+            "/proc/latency_stats",
+            "/proc/timer_list",
+            "/proc/timer_stats",
+            "/proc/sched_debug",
+            "/proc/scsi",
+            "/sys/firmware",
+            "/sys/devices/virtual/powercap"
+        ],
+        "Memory": 0,
+        "MemoryReservation": 0,
+        "MemorySwap": 0,
+        "MemorySwappiness": null,
+        "NanoCpus": 0,
+        "NetworkMode": "auto-stack-net",
+        "OomKillDisable": null,
+        "OomScoreAdj": 0,
+        "PidMode": "",
+        "PidsLimit": null,
+        "PortBindings": {
+            "6333/tcp": [
+                {
+                    "HostIp": "",
+                    "HostPort": "6333"
+                }
+            ],
+            "6334/tcp": [
+                {
+                    "HostIp": "",
+                    "HostPort": "6334"
+                }
+            ]
+        },
+        "Privileged": false,
+        "PublishAllPorts": false,
+        "ReadonlyPaths": [
+            "/proc/bus",
+            "/proc/fs",
+            "/proc/irq",
+            "/proc/sys",
+            "/proc/sysrq-trigger"
+        ],
+        "ReadonlyRootfs": false,
+        "RestartPolicy": {
+            "MaximumRetryCount": 0,
+            "Name": "unless-stopped"
+        },
+        "Runtime": "runc",
+        "SecurityOpt": null,
+        "ShmSize": 67108864,
+        "UTSMode": "",
+        "Ulimits": null,
+        "UsernsMode": "",
+        "VolumeDriver": "",
+        "VolumesFrom": null
+    },
+    "HostnamePath": "/var/lib/docker/containers/b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16/hostname",
+    "HostsPath": "/var/lib/docker/containers/b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16/hosts",
+    "Id": "b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16",
+    "Image": "sha256:419d72603f5346ee22ffc4606bdb7beb52fcb63077766fab678e6622ba247366",
+    "LogPath": "/var/lib/docker/containers/b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16/b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16-json.log",
+    "MountLabel": "",
+    "Mounts": [
+        {
+            "Destination": "/qdrant/storage",
+            "Mode": "rw",
+            "Propagation": "rprivate",
+            "RW": true,
+            "Source": "/d/docker-volumes/qdrant_storage",
+            "Type": "bind"
+        }
+    ],
+    "Name": "/qdrant_auto",
+    "NetworkSettings": {
+        "Bridge": "",
+        "EndpointID": "",
+        "Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "HairpinMode": false,
+        "IPAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "LinkLocalIPv6Address": "",
+        "LinkLocalIPv6PrefixLen": 0,
+        "MacAddress": "",
+        "Networks": {
+            "auto-stack-net": {
+                "Aliases": [
+                    "qdrant_auto",
+                    "b214383f069e"
+                ],
+                "DNSNames": [
+                    "qdrant_auto",
+                    "b214383f069e"
+                ],
+                "DriverOpts": null,
+                "EndpointID": "bfda36d0bad47c3c6d272f34c051d5e5e7f7a4c18fae2bd61b914a8c461c86f6",
+                "Gateway": "172.19.0.1",
+                "GlobalIPv6Address": "",
+                "GlobalIPv6PrefixLen": 0,
+                "GwPriority": 0,
+                "IPAMConfig": null,
+                "IPAddress": "172.19.0.7",
+                "IPPrefixLen": 16,
+                "IPv6Gateway": "",
+                "Links": null,
+                "MacAddress": "fe:1e:46:d1:ab:da",
+                "NetworkID": "2b7ed730deb1449c6291dafade3390681349a2f56dd70b9315fdb6af4edc67d2"
+            }
+        },
+        "Ports": {
+            "6333/tcp": [
+                {
+                    "HostIp": "0.0.0.0",
+                    "HostPort": "6333"
+                },
+                {
+                    "HostIp": "::",
+                    "HostPort": "6333"
+                }
+            ],
+            "6334/tcp": [
+                {
+                    "HostIp": "0.0.0.0",
+                    "HostPort": "6334"
+                },
+                {
+                    "HostIp": "::",
+                    "HostPort": "6334"
+                }
+            ]
+        },
+        "SandboxID": "e332703e3544115c449e027b60220dbc08f3d6eb5f76e310794a535f29451942",
+        "SandboxKey": "/var/run/docker/netns/e332703e3544",
+        "SecondaryIPAddresses": null,
+        "SecondaryIPv6Addresses": null
+    },
+    "Path": "./entrypoint.sh",
+    "Platform": "linux",
+    "ProcessLabel": "",
+    "ResolvConfPath": "/var/lib/docker/containers/b214383f069ea24580ab70ef650fddacb5a1ad4c0ba93ba46acb6b0b169b8a16/resolv.conf",
+    "RestartCount": 0,
+    "State": {
+        "Dead": false,
+        "Error": "",
+        "ExitCode": 0,
+        "FinishedAt": "2025-06-08T20:54:53.076251459Z",
+        "OOMKilled": false,
+        "Paused": false,
+        "Pid": 1067,
+        "Restarting": false,
+        "Running": true,
+        "StartedAt": "2025-06-09T11:25:37.798043576Z",
+        "Status": "running"
+    }
+}

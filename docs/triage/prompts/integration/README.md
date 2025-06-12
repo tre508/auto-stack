@@ -26,9 +26,9 @@ curl -H "Authorization: Bearer <access_token>" http://freqtrade_devcontainer:808
 ### Cross-Container Communication
 ```bash
 # Network connectivity testing
-docker network inspect mcp-net
-ping -c 2 controller_mcp
-ping -c 2 n8n_mcp
+docker network inspect auto-stack-net
+ping -c 2 controller_auto
+ping -c 2 n8n_auto
 ```
 
 ### Webhook Integration
@@ -97,7 +97,7 @@ ping -c 2 n8n_mcp
 ```
 
 ### Network Configuration
-- Services communicate via Docker network `mcp-net`
+- Services communicate via Docker network `auto-stack-net`
 - Use service names for internal communication
 - External endpoints exposed via Traefik proxy
 - Health checks implemented for all services
@@ -113,16 +113,16 @@ ping -c 2 n8n_mcp
 ### Diagnostic Commands
 ```bash
 # Check service health
-curl -f http://controller_mcp:8000/health
-curl -f http://n8n_mcp:5678/healthz
+curl -f http://controller_auto:5050/health
+curl -f http://n8n_auto:5678/healthz
 
 # Verify network connectivity
-docker exec n8n_mcp ping -c 2 controller_mcp
-docker exec controller_mcp ping -c 2 freqtrade_devcontainer
+docker exec n8n_auto ping -c 2 controller_auto
+docker exec controller_auto ping -c 2 freqtrade_devcontainer
 
 # Check service logs
-docker logs controller_mcp --tail 50
-docker logs n8n_mcp --tail 50
+docker logs controller_auto --tail 50
+docker logs n8n_auto --tail 50
 ```
 
 ## Integration Testing

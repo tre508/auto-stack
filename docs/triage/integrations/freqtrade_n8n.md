@@ -1,10 +1,10 @@
 # Freqtrade-n8n Integration Guide
 
-**Note for AI Agent:** This guide details how n8n (`n8n_mcp` service) workflows interact with Freqtrade. Use this to understand direct API polling, CLI command execution via n8n, interaction via the FastAPI Controller, and n8n's role in multi-agent Freqtrade automation. Pay close attention to configuration requirements for n8n (like credentials and `N8N_ALLOW_EXEC`) and Freqtrade.
+**Note for AI Agent:** This guide details how n8n (`n8n_auto` service) workflows interact with Freqtrade. Use this to understand direct API polling, CLI command execution via n8n, interaction via the FastAPI Controller, and n8n's role in multi-agent Freqtrade automation. Pay close attention to configuration requirements for n8n (like credentials and `N8N_ALLOW_EXEC`) and Freqtrade.
 
 ## Purpose
 <!-- source: docs/services/n8n/n8n_freqtrade_webhook_ideas.md, docs/services/n8n/n8n_multi_agent_concepts.md, docs/services/n8n/prompt_library/CentralBrain.md -->
-This document outlines how n8n (`n8n_mcp` service) workflows are utilized to automate, orchestrate, and interact with the Freqtrade environment. It covers various integration patterns, including direct Freqtrade API polling, execution of Freqtrade CLI commands, interaction via the FastAPI Controller, and the role of n8n in multi-agent Freqtrade automation.
+This document outlines how n8n (`n8n_auto` service) workflows are utilized to automate, orchestrate, and interact with the Freqtrade environment. It covers various integration patterns, including direct Freqtrade API polling, execution of Freqtrade CLI commands, interaction via the FastAPI Controller, and the role of n8n in multi-agent Freqtrade automation.
 
 ## Architecture
 <!-- source: docs/services/n8n/n8n_freqtrade_webhook_ideas.md, docs/setup/04_Cross_Stack_Integration_Guide.md, docs/setup/Freqtrade_Project_Checklist.md, docs/services/n8n/prompt_library/CentralBrain.md, docs/setup/05_Agent_Capabilities_and_Interaction.md -->
@@ -18,7 +18,7 @@ n8n workflows can directly query Freqtrade's REST API endpoints.
     <!-- source: docs/services/n8n/n8n_freqtrade_webhook_ideas.md -->
 
 ### 2. Interaction via FastAPI Controller
-n8n workflows can call API endpoints exposed by the FastAPI Controller (`controller_mcp`), which then communicates with Freqtrade.
+n8n workflows can call API endpoints exposed by the FastAPI Controller (`controller_auto`), which then communicates with Freqtrade.
 *   **Mechanism:** Uses "HTTP Request" nodes to call Controller endpoints.
 *   **Use Cases:** Preferred when the Controller provides additional logic, abstraction, or security layers over direct Freqtrade API calls.
     <!-- source: docs/setup/04_Cross_Stack_Integration_Guide.md, docs/setup/Freqtrade_Project_Checklist.md -->
@@ -86,7 +86,7 @@ n8n serves as the foundation for a hierarchical multi-agent system that manages 
 *   **Credentials:** Freqtrade API username and password should be stored securely using n8n's built-in credential manager and referenced in "HTTP Request" nodes.
 *   **Environment Variables:**
     *   `N8N_ALLOW_EXEC=true`: Required if using the "Execute Command" node. Be aware of the security implications of enabling command execution.
-*   **Network Access:** The n8n container (`n8n_mcp`) must be on the same Docker network (e.g., `mcp-net`) as the Freqtrade container (`freqtrade_devcontainer`) to allow direct API calls and CLI execution (if applicable). It also needs access to the `controller_mcp` if interacting via the Controller.
+*   **Network Access:** The n8n container (`n8n_auto`) must be on the same Docker network (e.g., `auto-stack-net`) as the Freqtrade container (`freqtrade_devcontainer`) to allow direct API calls and CLI execution (if applicable). It also needs access to the `controller_auto` if interacting via the Controller.
     <!-- source: docs/services/n8n/n8n_freqtrade_webhook_ideas.md -->
 
 ### Freqtrade-Side
@@ -118,11 +118,11 @@ n8n workflows should incorporate robust error handling:
 *   **"HTTP Request" Node Failures (API Calls):**
     *   **Action: Verify Freqtrade API Credentials.** Ensure the username, password, and subsequently fetched token used in n8n's "HTTP Request" nodes are correct and match Freqtrade's configuration. Use n8n's credential manager.
     *   **Action: Validate Freqtrade API Endpoint URL.** Confirm the URL is accurate and that the Freqtrade API is accessible from the n8n container's network environment.
-    *   **Action: Test API Endpoint Directly.** If possible, use `curl` from within the `n8n_mcp` container (e.g., `docker exec -it n8n_mcp bash`) or from another container on the same network to test the Freqtrade API endpoint directly. This helps isolate whether the issue is with Freqtrade or n8n's request.
+    *   **Action: Test API Endpoint Directly.** If possible, use `curl` from within the `n8n_auto` container (e.g., `docker exec -it n8n_auto bash`) or from another container on the same network to test the Freqtrade API endpoint directly. This helps isolate whether the issue is with Freqtrade or n8n's request.
         ```bash
-        # Example if n8n_mcp container has curl:
+        # Example if n8n_auto container has curl:
         # 1. Access n8n container shell:
-        # docker exec -it n8n_mcp bash
+        # docker exec -it n8n_auto bash
         # 2. Test authentication (replace with actual credentials):
         # curl -u your_freqtrade_user:your_freqtrade_pass -X POST http://freqtrade_devcontainer:8080/api/v1/token/user
         # 3. If successful, copy the access_token and test another endpoint:
@@ -130,7 +130,7 @@ n8n workflows should incorporate robust error handling:
         # curl -H "Authorization: Bearer $TOKEN" http://freqtrade_devcontainer:8080/api/v1/status
         ```
 *   **"Execute Command" Node Failures (CLI Calls):**
-    *   **Action: Confirm `N8N_ALLOW_EXEC=true`.** This environment variable must be set to `true` for the n8n service in its Docker configuration (e.g., `compose-mcp.yml`) for the "Execute Command" node to function.
+    *   **Action: Confirm `N8N_ALLOW_EXEC=true`.** This environment variable must be set to `true` for the n8n service in its Docker configuration (e.g., `docker-compose.yml`) for the "Execute Command" node to function.
     *   **Action: Verify Command Syntax.** Ensure the `freqtrade` command and all its arguments are syntactically correct.
     *   **Action: Test Command Manually in Freqtrade Container.** Execute the exact command manually by `exec`-ing into the `freqtrade_devcontainer` to confirm it runs correctly there and produces the expected output.
         ```bash
@@ -140,5 +140,5 @@ n8n workflows should incorporate robust error handling:
         ```
     *   **Action: Check Permissions.** If the command involves file system access within the Freqtrade container, ensure the necessary permissions are in place.
     *   **Action: Examine `stdout` and `stderr`.** Review the `stdout` and `stderr` outputs provided by the "Execute Command" node in the n8n execution log for error details.
-*   **Action: Verify Network Connectivity.** Ensure the `n8n_mcp` container and the `freqtrade_devcontainer` (and `controller_mcp` if interaction is via the controller) are on the same Docker network (e.g., `mcp-net`) and can resolve each other's service names.
+*   **Action: Verify Network Connectivity.** Ensure the `n8n_auto` container and the `freqtrade_devcontainer` (and `controller_auto` if interaction is via the controller) are on the same Docker network (e.g., `auto-stack-net`) and can resolve each other's service names.
 *   **Action: Debug Data Parsing.** If extracting data from Freqtrade API responses or CLI output, carefully inspect the structure of the incoming data. Use n8n's expression editor and the output inspector for each node to verify that your parsing logic (in "Function" nodes, "Set" nodes, or other data manipulation nodes) is correct.

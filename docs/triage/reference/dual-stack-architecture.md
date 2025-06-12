@@ -19,7 +19,7 @@ The project is organized into two interconnected Dockerized stacks: the **automa
 
 ### Core Service Configuration & Verification
 
-All services in the automation-stack are defined in a unified `compose-mcp.yml` file and a shared `.env`. Verification is guided by a detailed checklist covering:
+All services in the automation-stack are defined in a unified `docker-compose.yml` file and a shared `.env`. Verification is guided by a detailed checklist covering:
 
 * Container health and logs (Docker ps/logs)
 * Endpoint accessibility via Traefik hostnames and direct network calls
@@ -35,7 +35,7 @@ The Freqtrade stack runs inside a VS Code Dev Container, ensuring a reproducible
 * **Algorithmic Trading Bots**: Live deployment and management of trading strategies.
 * **Strategy Development & Backtesting**: Python-based strategy coding, historical data analysis, and FreqAI model integration.
 * **User Data Persistence**: Mounting `user_data/` for strategies, notebooks, logs, and backtest results.
-* **API & UI Access**: Freqtrade’s REST API and web UI are forwarded to the host (e.g., `http://localhost:8080`) and can join the shared `mcp-net` network for cross-stack calls .
+* **API & UI Access**: Freqtrade’s REST API and web UI are forwarded to the host (e.g., `http://localhost:8080`) and can join the shared `auto-stack-net` network for cross-stack calls .
 
 ---
 
@@ -112,7 +112,7 @@ This **dual-stack** model unifies AI-driven orchestration with algorithmic tradi
 ### Infrastructure
 
 1. **Monolithic Docker Compose**
-   All core services (n8n, Mem0/Qdrant, FastAPI controller, Traefik, etc.) run under a single `compose-mcp.yml`. There’s no higher-level orchestration (e.g. Kubernetes) for auto-scaling, rolling updates, or node failure recovery .
+   All core services (n8n, Mem0/Qdrant, FastAPI controller, Traefik, etc.) run under a single `docker-compose.yml`. There’s no higher-level orchestration (e.g. Kubernetes) for auto-scaling, rolling updates, or node failure recovery .
 
 2. **Lack of Centralized Monitoring & Alerting**
    While agent actions are logged to PostgreSQL, there’s no metrics stack (Prometheus/Grafana) or centralized log aggregation (ELK/EFK). This makes it hard to track container resource usage, request latencies, error rates, or set up automated alerts before incidents cascade.

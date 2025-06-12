@@ -71,7 +71,7 @@ curl -X POST http://localhost:3001/run_eko \
 3. Missing dependencies in Docker container
 
 # Debugging steps:
-docker exec -it eko_service_mcp /bin/sh -c "npm list @eko-ai/eko"
+docker exec -it eko_service_auto /bin/sh -c "npm list @eko-ai/eko"
 ```
 
 ## Resolution Checklist
@@ -83,30 +83,29 @@ grep ANTHROPIC_API_KEY .env
 
 2. Confirm Docker containers are rebuilt with latest changes:
 ```bash
-docker-compose -f compose-mcp.yml down && docker-compose -f compose-mcp.yml up -d --build
+docker-compose -f docker-compose.yml down && docker-compose -f docker-compose.yml up -d --build
 # Expected: All containers start without errors
 ```
 
 3. Check service logs for initialization errors:
 ```bash
-docker logs eko_service_mcp | grep -i error
+docker logs eko_service_auto | grep -i error
 # Look for any initialization failures or missing modules
 ```
 
 4. Verify Eko package installation in container:
 ```bash
-docker exec eko_service_mcp npm list --depth=0
+docker exec eko_service_auto npm list --depth=0
 # Should show @eko-ai/eko in the dependencies list
 ```
 
 ### Service Configuration
 ```yaml
-# compose-mcp.yml excerpt
+# docker-compose.yml excerpt
 eko_service:
   build: ./controller
   environment:
     - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    - EKO_LLM_PROVIDER=${EKO_LLM_PROVIDER}
   ports:
     - "3001:3001"
 ```
@@ -301,7 +300,7 @@ curl -X POST http://localhost:3001/run_eko \
 - Incorrect service names
 
 **Solutions**:
-1. Ensure all services are on `mcp-net`
+1. Ensure all services are on `auto-stack-net`
 2. Use Docker service names for inter-container communication
 
 ---

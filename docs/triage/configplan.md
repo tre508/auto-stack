@@ -44,8 +44,6 @@ This document outlines the environment variables and configuration settings requ
 
 - [ ] `ANTHROPIC_API_KEY` [S] - API Key for Anthropic.
 - [ ] `OPENAI_API_KEY` [S] - API Key for OpenAI.
-- [ ] `EKO_LLM_PROVIDER` [O] - LLM provider for Eko (e.g., `anthropic`, `openai`).
-- [ ] `EKO_MODEL_NAME` [O] - Specific model name for the chosen LLM provider.
 - [ ] `EKO_SERVICE_PORT` [R] - Port for the Eko service (internal, e.g., `3001`).
 
 ## Service: Freq-Chat

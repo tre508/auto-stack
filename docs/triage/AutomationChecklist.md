@@ -15,34 +15,34 @@ This checklist tracks the status and verification of automated tasks and key ser
 
 ## I. Core Service Verification (`automation-stack`)
 
-Ensure all services in `compose-mcp.yml` are operational and accessible as expected.
+Ensure all services in `docker-compose.yml` are operational and accessible as expected.
 
 *   **Traefik Reverse Proxy:**
     *   `[✅]` Traefik dashboard accessible (if exposed, typically `http://localhost:8080/dashboard/` or `http://traefik.localhost/dashboard/`).
     *   `[✅]` Services (n8n, Controller) routed correctly via Traefik host rules (e.g., `http://n8n.localhost`, `http://controller.localhost`).
-*   **OpenWebUI (`openwebui_mcp`):**
+*   **OpenWebUI (`openwebui_auto`):**
     *   `[✅]` Web interface accessible (e.g., `http://localhost:3000` verified; `http://openwebui.localhost` verified).
     *   `[🚧]` User registration and login functional. **Note:** Requires manual browser verification; page loads, auth enabled.
-    *   `[✅]` Able to connect to Ollama service (`ollama_mcp`).
+    *   `[✅]` Able to connect to Ollama service (`ollama_auto`).
     *   `[✅]` Able to pull and run a model from Ollama (e.g., `llama3`). **Note:** `llama3` pull successful. Running model verified by basic chat test.
     *   `[✅]` Basic chat with a local model works.
     *   `[✅]` Can connect to OpenRouter via the proxy service.
     *   `[✅]` Basic chat with an OpenRouter model (via proxy) works.
-*   **Ollama (`ollama_mcp`):**
+*   **Ollama (`ollama_auto`):**
     *   `[ ]` Service logs indicate successful startup and GPU detection (if applicable).
-    *   `[ ]` API accessible within Docker network (e.g., from OpenWebUI or n8n at `http://ollama_mcp:11434`).
-    *   `[ ]` Models can be pulled via OpenWebUI or `docker exec ollama_mcp ollama pull <model_name>`.
-*   **n8n (`n8n_mcp`):**
+    *   `[ ]` API accessible within Docker network (e.g., from OpenWebUI or n8n at `http://ollama_auto:11434`).
+    *   `[ ]` Models can be pulled via OpenWebUI or `docker exec ollama_auto ollama pull <model_name>`.
+*   **n8n (`n8n_auto`):**
     *   `[✅]` Web interface accessible (e.g., `http://localhost:5678` or `http://n8n.localhost`).
     *   `[ ]` Basic workflow creation and execution functional.
-    *   `[ ]` HTTP Request node can reach other services on `mcp-net` (e.g., Controller).
+    *   `[ ]` HTTP Request node can reach other services on `auto-stack-net` (e.g., Controller).
     *   `[ ]` Access to shared volumes (e.g., `/host_vault/automation_docs`, `/host_vault/freqtrade_docs`) verified if configured and used by workflows.
-*   **FastAPI Controller (`controller_mcp`):**
+*   **FastAPI Controller (`controller_auto`):**
     *   `[✅]` Service logs indicate successful startup.
-    *   `[✅]` API accessible via Traefik (e.g., `http://controller.localhost/status`) and directly on `mcp-net` (e.g. `http://controller_mcp:5050/status`).
+    *   `[✅]` API accessible via Traefik (e.g., `http://controller.localhost/status`) and directly on `auto-stack-net` (e.g. `http://controller_auto:5050/status`).
     *   `[✅]` `/docs` endpoint (OpenAPI spec) is accessible and shows defined routes.
     *   `[✅]` Key API endpoints (e.g., health check, example command) respond correctly. (Note: `/status` and `/notify` confirmed).
-*   **OpenRouter Proxy (`openrouter_proxy_mcp`) (Optional):**
+*   **OpenRouter Proxy (`openrouter_proxy_auto`) (Optional):**
     *   `[✅]` Service logs indicate successful startup (includes `OPENROUTER_API_KEY` check).
     *   `[✅]` API accessible via Traefik (e.g., `http://openrouter-proxy.localhost/v1/...`).
     *   `[✅]` `/healthz` endpoint accessible and returns `OK`.
@@ -54,29 +54,29 @@ Ensure all services in `compose-mcp.yml` are operational and accessible as expec
     *   `[✅]` Database schema migrations appear successful (tables exist, `drizzle-kit generate` reports no changes).
     *   `[❌]` TypeScript errors present in VS Code ("Cannot find module", "Cannot find name 'process'"). *Next Action: Restart TS Server / Investigate `tsconfig.json` / Install missing `@types/*`.*
     *   `[🚧]` NextAuth.js `headers()`/`cookies()` warnings in `/api/auth/guest` route. *Next Action: Lower priority, revisit after UI/TS issues.*
-    *   `[ ]` API accessible within Docker network (e.g., from n8n at `http://freq-chat:3000` if containerized and named `freq-chat`). *(Assuming local dev for now, not containerized `vercel_chat_mcp`)*
+    *   `[ ]` API accessible within Docker network (e.g., from n8n at `http://freq-chat:3000` if containerized and named `freq-chat`). *(Assuming local dev for now, not containerized `vercel_chat_auto`)*
     *   `[ ]` Connection to backend LLM providers (e.g., OpenRouter via proxy or direct) from `freq-chat` local dev server.
-    *   `[ ]` Integration with self-hosted Mem0 service (`mem0_mcp`) for conversational memory.
-*   **Mem0 (`mem0_mcp`):**
-    *   `[ ]` Service (`mem0_mcp`) is running (check `docker ps`).
-    *   `[ ]` Logs (`docker logs mem0_mcp`) indicate successful startup, connection to Qdrant, and readiness to use OpenRouter proxy.
+    *   `[ ]` Integration with self-hosted Mem0 service (`mem0_auto`) for conversational memory.
+*   **Mem0 (`mem0_auto`):**
+    *   `[ ]` Service (`mem0_auto`) is running (check `docker ps`).
+    *   `[ ]` Logs (`docker logs mem0_auto`) indicate successful startup, connection to Qdrant, and readiness to use OpenRouter proxy.
     *   `[ ]` Health check endpoint (`http://${MEM0_HOST:-mem0.localhost}:${MEM0_HOST_PORT:-7860}/status` or Traefik route) returns healthy status.
     *   `[ ]` Basic memory operations (add, search via REST API) are functional.
-    *   `[ ]` Data persistence for Mem0 history DB (e.g., `/data/mem0_history.db` in `mem0_data_mcp` volume) verified across restarts.
+    *   `[ ]` Data persistence for Mem0 history DB (e.g., `/data/mem0_history.db` in `mem0_data_auto` volume) verified across restarts.
     *   `[ ]` `mem0/server/config.yaml` correctly configured for Qdrant, OpenRouter proxy (via "openai" provider and env vars).
-*   **Qdrant (`qdrant_mcp`):**
-    *   `[ ]` Service (`qdrant_mcp`) is running.
-    *   `[ ]` Logs (`docker logs qdrant_mcp`) are clean.
+*   **Qdrant (`qdrant_auto`):**
+    *   `[ ]` Service (`qdrant_auto`) is running.
+    *   `[ ]` Logs (`docker logs qdrant_auto`) are clean.
     *   `[ ]` Qdrant UI/API accessible (e.g., `http://localhost:6333`).
-    *   `[ ]` Data persistence for Qdrant vectors (`qdrant_data_mcp` volume) verified across restarts.
+    *   `[ ]` Data persistence for Qdrant vectors (`qdrant_data_auto` volume) verified across restarts.
     *   `[ ]` Mem0 service successfully connects to Qdrant.
-*   **PostgreSQL Logging (`postgres_logging_mcp`):**
-    *   `[✅]` Service (`postgres_logging_mcp`) is running.
-    *   `[✅]` Logs (`docker logs postgres_logging_mcp`) are clean.
+*   **PostgreSQL Logging (`postgres_logging_auto`):**
+    *   `[✅]` Service (`postgres_logging_auto`) is running.
+    *   `[✅]` Logs (`docker logs postgres_logging_auto`) are clean.
     *   `[✅]` Can connect via `psql` or DB client using credentials from `.env`.
     *   `[✅]` `agent_logs` table exists with the correct schema.
     *   `[✅]` `mem0_memory_events` table exists with the correct schema.
-    *   `[✅]` Data persistence for logs (`pgdata_logging_mcp` volume) verified.
+    *   `[✅]` Data persistence for logs (`pgdata_logging_auto` volume) verified.
 
 ## II. Freqtrade Dev Container Verification
 
@@ -88,7 +88,7 @@ Ensure the Freqtrade dev container is operational.
     *   `[ ]` Freqtrade REST API accessible (e.g., `http://localhost:8080/api/v1/ping`).
     *   `[ ]` `user_data` correctly mounted and accessible within the container.
     *   `[ ]` Basic Freqtrade commands work in the container's terminal (e.g., `freqtrade --version`, `freqtrade list-strategies`).
-    *   `[ ]` (If applicable) Devcontainer connected to `mcp-net` or relevant shared Docker network for API access from `automation-stack`.
+    *   `[ ]` (If applicable) Devcontainer connected to `auto-stack-net` or relevant shared Docker network for API access from `automation-stack`.
 
 ## III. Cross-Stack Integration Verification
 
@@ -102,7 +102,7 @@ Verify communication and workflows between the `automation-stack` and `freqtrade
 *   **n8n -> OpenRouter Proxy (LLM Tasks):**
     *   `[ ]` n8n workflow (using HTTP Request node) can successfully call `http://openrouter-proxy.localhost/v1/chat/completions` and receive a response from an OpenRouter model.
 *   **n8n -> Vercel AI Chat/Ollama (LLM Tasks):**
-    *   `[ ]` n8n workflow can send a prompt to Vercel AI Chat's OpenAI-compatible API (`http://vercel_chat_mcp:8080/v1/chat/completions`) and receive a response from a local Ollama model.
+    *   `[ ]` n8n workflow can send a prompt to Vercel AI Chat's OpenAI-compatible API (`http://vercel_chat_auto:8080/v1/chat/completions`) and receive a response from a local Ollama model.
 *   **Controller -> Mem0 API:**
     *   `[ ]` Controller can successfully call self-hosted Mem0 REST API endpoints (add, search).
 *   **n8n -> Mem0 API:**
@@ -160,7 +160,7 @@ These are potential automation tasks an AI agent or n8n workflows might perform.
 
 ## V. n8n AI Capabilities & n8nChat Integration
 
-Verify n8n's AI features, including n8nChat and MCP nodes, and their integration with the `openrouter_proxy_mcp`.
+Verify n8n's AI features, including n8nChat and MCP nodes, and their integration with the `openrouter_proxy_auto`.
 
 *   **n8nChat Extension:**
     *   `[ ]` n8nChat browser extension installed and connected to `http://n8n.localhost`.
@@ -192,7 +192,7 @@ Verify n8n's AI features, including n8nChat and MCP nodes, and their integration
 ## VII. Unified Logging
 
 *   **Unified Logging (PostgreSQL):**
-    *   `[✅]` Services (e.g., n8n workflows) can write to the `agent_logs` table in the `postgres_logging_mcp` database.
+    *   `[✅]` Services (e.g., n8n workflows) can write to the `agent_logs` table in the `postgres_logging_auto` database.
     *   `[✅]` Log entries are correctly formatted and queryable (verified for `n8n_workflow_UnifiedLogging.json`).
     *   `[ ]` **Next n8n Workflow:** Configure and test `n8n_workflow_Mem0_Memory_Logger.json` for writing to `mem0_memory_events`.
     *   `[✅]` Schema matches `docs/guides/mem0_server_guide.md` (which references `UnifiedLogging.md` concepts).

@@ -29,13 +29,13 @@ This guide documents available MCP (Model Control Protocol) servers and tools in
 * Purge outdated memory entries.
 * Track the state of multi-step automation sequences.
 * Log key decisions made during complex task execution.
-* Cache checksums or versions of critical config files (`compose-mcp.yml`, `.env`) to detect unintended changes.
+* Cache checksums or versions of critical config files (`docker-compose.yml`, `.env`) to detect unintended changes.
 
 **Example:**
 
 ```bash
 mem0::add_memory { "content": "Summarized agent checklist run for Vercel API, item 3.1 success", "tags": ["agent", "checklist", "vercel_api"] }
-mem0::search_memory { "query": "controller_mcp status endpoint" }
+mem0::search_memory { "query": "controller_auto status endpoint" }
 ```
 
 ---
@@ -52,7 +52,7 @@ mem0::search_memory { "query": "controller_mcp status endpoint" }
 
 * Construct or visualize agent graphs and service dependencies.
 * Link agents to tasks or events.
-* Model relationships between services in `compose-mcp.yml` (e.g., `controller_mcp` depends_on `mem0`).
+* Model relationships between services in `docker-compose.yml` (e.g., `controller_auto` depends_on `mem0`).
 * Represent `n8n` workflows as entities and link them to the services they interact with.
 * Track documentation entities and their dependencies.
 * Log successful/failed integration test results from `AutomationChecklist.md` as observations on relevant service entities.
@@ -62,7 +62,7 @@ mem0::search_memory { "query": "controller_mcp status endpoint" }
 ```bash
 servers::create_entities { "type": "Agent", "name": "CentralBrain_Agent" }
 servers::create_relations { "source": "CentralBrain_Agent", "target": "VercelChat_Node", "type": "uses" }
-servers::add_observations { "entityName": "controller_mcp", "contents": ["Responded to /status check successfully at $(Get-Date)"] }
+servers::add_observations { "entityName": "controller_auto", "contents": ["Responded to /status check successfully at $(Get-Date)"] }
 ```
 
 ---
@@ -78,15 +78,15 @@ servers::add_observations { "entityName": "controller_mcp", "contents": ["Respon
 
 **Project Use Cases:**
 
-* Monitor or restart containers (`vercel_chat_mcp`, `mem0`, `controller_mcp`, `n8n_mcp`).
-* Fetch `.env` files or service logs for troubleshooting (e.g., `docker logs controller_mcp`).
-* Adjust configs in-place (e.g., port mappings in `compose-mcp.yml`, followed by `docker-compose up -d --force-recreate <service_name>`). **Use with extreme caution and backup original values.**
+* Monitor or restart containers (`vercel_chat_auto`, `mem0`, `controller_auto`, `n8n_auto`).
+* Fetch `.env` files or service logs for troubleshooting (e.g., `docker logs controller_auto`).
+* Adjust configs in-place (e.g., port mappings in `docker-compose.yml`, followed by `docker-compose up -d --force-recreate <service_name>`). **Use with extreme caution and backup original values.**
 * Check disk usage within the Docker environment.
 
 **Automation-Stack Tips:**
 *   For `execute_command`:
-    *   Automate restarting services: `MCP_DOCKER::execute_command { "command": "docker restart controller_mcp" }`
-    *   Tail logs: `MCP_DOCKER::execute_command { "command": "docker logs vercel_chat_mcp --tail 50" }`
+    *   Automate restarting services: `MCP_DOCKER::execute_command { "command": "docker restart controller_auto" }`
+    *   Tail logs: `MCP_DOCKER::execute_command { "command": "docker logs vercel_chat_auto --tail 50" }`
 *   For `read_file`:
     *   Inspect service configurations: `MCP_DOCKER::read_file { "path": "/app/.env" }` (assuming path inside the container, adjust as needed for mounted volumes like `~/projects/auto-stack/controller/.env`).
 *   For `edit_block`:
@@ -95,8 +95,8 @@ servers::add_observations { "entityName": "controller_mcp", "contents": ["Respon
 **Example:**
 
 ```bash
-MCP_DOCKER::read_file { "path": "~/projects/auto-stack/compose-mcp.yml" }
-MCP_DOCKER::execute_command { "command": "docker ps -a --filter name=controller_mcp" }
+MCP_DOCKER::read_file { "path": "~/projects/auto-stack/docker-compose.yml" }
+MCP_DOCKER::execute_command { "command": "docker ps -a --filter name=controller_auto" }
 ```
 
 ---
@@ -117,14 +117,14 @@ MCP_DOCKER::execute_command { "command": "docker ps -a --filter name=controller_
 * Update or diff Markdown docs (e.g., `AutomationChecklist.md`, `docs/vercel/*.md`). Use relative paths from workspace root for consistency.
 * Search code or configuration patterns across folders.
 * Auto-generate doc directories as outlined in `MasterGameplan.md` or `TODO.md`.
-* Verify existence and content of critical files like `.env` or `compose-mcp.yml` before starting automation tasks.
+* Verify existence and content of critical files like `.env` or `docker-compose.yml` before starting automation tasks.
 
 **Example:**
 
 ```bash
 Filesystem::search_files { "path": "~/projects/auto-stack/docs/setup", "pattern": "*.md" }
 Filesystem::write_file { "path": "docs/vercel/troubleshooting.md", "content": "# Vercel Troubleshooting\nUpdated: $(date)\n..." }
-Filesystem::read_file { "path": "compose-mcp.yml" }
+Filesystem::read_file { "path": "docker-compose.yml" }
 ```
 
 ---
@@ -135,15 +135,15 @@ Filesystem::read_file { "path": "compose-mcp.yml" }
 
 **Use Cases:**
 
-* Start, stop, inspect, or debug containers defined in `compose-mcp.yml`.
-* Regularly inspect logs of `vercel_chat_mcp`, `n8n_mcp`, and `controller_mcp`.
+* Start, stop, inspect, or debug containers defined in `docker-compose.yml`.
+* Regularly inspect logs of `vercel_chat_auto`, `n8n_auto`, and `controller_auto`.
 
 **Example:**
 
 ```bash
-Docker::docker { "args": "logs vercel_chat_mcp --tail 100" }
+Docker::docker { "args": "logs vercel_chat_auto --tail 100" }
 Docker::docker { "args": "ps -a --filter label=com.docker.compose.project=automation-stack" }
-Docker::docker { "args": "restart n8n_mcp" }
+Docker::docker { "args": "restart n8n_auto" }
 ```
 
 ---
@@ -169,7 +169,7 @@ Fetch::fetch { "url": "https://fastapi.tiangolo.com/tutorial/first-steps/" }
 ### 🧰 Utility Servers
 
 * `OpenAPI Schema`: Generate & inspect Swagger/OpenAPI routes.
-    * **Automation-Stack Tip:** Use to inspect the `/docs` endpoint of `controller_mcp` to understand available API routes and their schemas, crucial for `n8n` workflow design or direct API calls.
+    * **Automation-Stack Tip:** Use to inspect the `/docs` endpoint of `controller_auto` to understand available API routes and their schemas, crucial for `n8n` workflow design or direct API calls.
 * `Time`: Convert timezones or compute durations.
 * `Git`: Stage/commit/push directly from workflows.
     * **Automation-Stack Tip:** Automate committing documentation changes after successful task completion (e.g., `Git::git { "args": "add docs/AutomationChecklist.md" }`, then `Git::git { "args": "commit -m 'Verified item X on AutomationChecklist'" }`).
@@ -184,7 +184,7 @@ Fetch::fetch { "url": "https://fastapi.tiangolo.com/tutorial/first-steps/" }
 * Use `mem0` to track troubleshooting context, task memory, and pre-change states of critical configurations.
 * When invoking multiple tools, namespace responses or log entries per task context for clarity.
 * For tasks involving `AutomationChecklist.md`, structure `mem0` entries or `servers` observations with consistent tagging (e.g., `checklist_item_id`, `status:success/failure`, `timestamp`).
-* **Crucial for Configs:** When using `MCP_DOCKER::edit_block` or `Filesystem::write_file` on sensitive files (`compose-mcp.yml`, `.env` files):
+* **Crucial for Configs:** When using `MCP_DOCKER::edit_block` or `Filesystem::write_file` on sensitive files (`docker-compose.yml`, `.env` files):
     1. Read the file first.
     2. Log the existing relevant section using `mem0::add_memory` (for snippets) or `servers::add_observations` (for entity states).
     3. Make the change.

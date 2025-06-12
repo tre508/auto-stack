@@ -32,7 +32,7 @@
 
      ```yaml
      volumes:
-       - automation-stack_pgdata_logging_mcp:/var/lib/postgresql/data
+       - automation-stack_pgdata_logging_auto:/var/lib/postgresql/data
      ```
 
      **with**:
@@ -46,7 +46,7 @@
 
      ```yaml
      volumes:
-       - automation-stack_n8n_data_mcp:/home/node/.n8n
+       - automation-stack_n8n_data_auto:/home/node/.n8n
      ```
 
      **with**:
@@ -59,7 +59,7 @@
 
      ```yaml
      volumes:
-       - automation-stack_qdrant_data_mcp:/qdrant/storage
+       - automation-stack_qdrant_data_auto:/qdrant/storage
      ```
 
      **with**:
@@ -72,7 +72,7 @@
 
      ```yaml
      volumes:
-       - automation-stack_mem0_data_mcp:/data
+       - automation-stack_mem0_data_auto:/data
      ```
 
      **with**:
@@ -86,10 +86,10 @@
 
      ```yaml
      volumes:
-       automation-stack_pgdata_logging_mcp:
-       automation-stack_n8n_data_mcp:
-       automation-stack_qdrant_data_mcp:
-       automation-stack_mem0_data_mcp:
+       automation-stack_pgdata_logging_auto:
+       automation-stack_n8n_data_auto:
+       automation-stack_qdrant_data_auto:
+       automation-stack_mem0_data_auto:
      ```
 
      Because bind-mounts do not rely on Docker-managed volumes.
@@ -121,10 +121,10 @@
   * For each data-heavy service, check logs to ensure no errors related to file access:
 
     ```bash
-    docker compose logs postgres_logging_mcp
-    docker compose logs n8n_mcp
-    docker compose logs qdrant_mcp
-    docker compose logs mem0_mcp
+    docker compose logs postgres_logging_auto
+    docker compose logs n8n_auto
+    docker compose logs qdrant_auto
+    docker compose logs mem0_auto
     ```
 
     * Look for lines like "database system is ready to accept connections" (Postgres), "SQLite database opened" (n8n), "Qdrant state loaded" (Qdrant), etc.
@@ -136,7 +136,7 @@
      * From your WSL terminal or a local client, connect to `localhost:5433` using credentials (`autostack_logger` / `yoursecurepassword_logger`).
      * You can use `docker exec` to run `psql` inside the container:
        ```bash
-       docker compose exec postgres_logging_mcp psql -U autostack_logger -d autostack_logs
+       docker compose exec postgres_logging_auto psql -U autostack_logger -d autostack_logs
        ```
      * Inside `psql`, run:
 
@@ -222,10 +222,10 @@
     ```bash
     docker volume ls
     ```
-  * Remove any leftover named volumes that you replaced with bind mounts (e.g., `automation-stack_pgdata_logging_mcp`, `automation-stack_n8n_data_mcp`, etc.):
+  * Remove any leftover named volumes that you replaced with bind mounts (e.g., `automation-stack_pgdata_logging_auto`, `automation-stack_n8n_data_auto`, etc.):
 
     ```bash
-    docker volume rm automation-stack_pgdata_logging_mcp automation-stack_n8n_data_mcp automation-stack_qdrant_data_mcp automation-stack_mem0_data_mcp
+    docker volume rm automation-stack_pgdata_logging_auto automation-stack_n8n_data_auto automation-stack_qdrant_data_auto automation-stack_mem0_data_auto
     ```
   * Confirm they're gone:
 

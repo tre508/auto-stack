@@ -37,7 +37,7 @@
 
 ## 3. Current System Architecture Focus
 
-*   **Primary Stacks:** `automation-stack`, `freqtrade` (Dev Container)
+*   **Primary Stacks:** `auto-stack`, `freqtrade` (Dev Container)
 *   **Key Services Under Active Development/Refinement:** (e.g., FastAPI Controller, specific n8n workflows, new FreqAI models)
 *   **Integration Points of Focus:** (e.g., Controller-Freqtrade API link, n8n-LLM interaction for reporting)
 *   **Multi-Agent Documentation & Task Orchestration Hub:** Implementation and refinement of agent orchestration workflows (CentralBrain_Agent, DocAgent, FreqtradeSpecialist_Agent) for intelligent documentation management and automation.
@@ -100,8 +100,8 @@
 1. **Remove old containers/volumes if needed:**
    - `docker compose down -v` in both automation-stack and freqtrade directories.
    - Optionally prune unused Docker resources: `docker system prune -af` (CAUTION: removes all stopped containers/images).
-2. **Rebuild automation-stack:**
-   - `cd automation-stack`
+2. **Rebuild auto-stack:**
+   - `cd auto-stack`
    - `docker compose up -d --build`
    - Verify all services via Traefik dashboard and AutomationChecklist.md.
 3. **Start fresh Freqtrade devcontainer:**
@@ -109,8 +109,8 @@
    - Use "Reopen in Container" (Dev Containers extension) or run `docker compose up -d` if using standalone Docker Compose.
    - Confirm Freqtrade UI/API is accessible (http://localhost:8080) and CLI works in container terminal.
    - Ensure `user_data` is mounted and persists configs/strategies.
-4. **Connect Freqtrade to automation-stack:**
-   - Ensure Freqtrade container joins the shared Docker network (e.g., `mcp-net`) if API access from automation-stack is required (see docker-compose.yml and devcontainer.json).
+4. **Connect Freqtrade to auto-stack:**
+   - Ensure Freqtrade container joins the shared Docker network (e.g., `auto-stack-net`) if API access from auto-stack is required (see docker-compose.yml and devcontainer.json).
    - Test Controller <-> Freqtrade API calls (see AutomationChecklist.md, webhookFlows.md).
 5. **Verify integration and logging:**
    - Run n8n workflows that interact with Controller and Freqtrade.
@@ -130,4 +130,4 @@
 
 ---
 
-*This document should be reviewed and updated regularly (e.g., monthly or quarterly) to reflect project progress and evolving goals.* 
+*This document should be reviewed and updated regularly (e.g., monthly or quarterly) to reflect project progress and evolving goals.*

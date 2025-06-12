@@ -32,7 +32,7 @@
 | TODO.md               | ✅ Replaced    | **REPLACED.** Original file moved to `depreciated/` by user. Superseded by the new `automation-stack/docs/TODO.md` (which is based on `setup/MasterGameplan.md`) and the detailed guides in `automation-stack/docs/setup/`. Original status: `⚠️ Archive & Replace`. |
 | INDEX.md              | ✅ Rebuilt     | **REGENERATED & REPLACED.** New index created based on current `docs/` directory structure, excluding `OpenWebUI_Docs/`. Original status: `⚠️ Blocked`. |
 | obsidian_service_docs.md | ✅ Updated     | **UPDATED.** Rewritten to reflect current doc sharing via Docker volumes (`/automation-stack/docs/`, `/freqtrade/user_data/docs/`). Removed Optuna references. Clarified distinction between core project doc access and optional user-managed Obsidian integrations (e.g., `Remotely Save`, external git clones). Original TODOs addressed. |
-| proxy.md              | ✅ Updated     | **INTEGRATED & UPDATED.** Node.js OpenRouter proxy is now a containerized service (`openrouter_proxy_mcp`) in `compose-mcp.yml`. Document updated to reflect this, including setup via `.env`, Traefik routing, and usage as a managed service. Original TODOs addressed. |
+| proxy.md              | ✅ Updated     | **INTEGRATED & UPDATED.** Node.js OpenRouter proxy is now a containerized service (`openrouter_proxy_auto`) in `docker-compose.yml`. Document updated to reflect this, including setup via `.env`, Traefik routing, and usage as a managed service. Original TODOs addressed. |
 | pipe_mcp.md           | ✅ Updated     | **UPDATED.** Emphasized its advanced/optional nature and that it's not a baseline feature. Stated that inclusion of `mcpo`/MCP tools is a pending decision. Advised users to consult official `mcpo` docs for up-to-date setup information. Original TODOs addressed. |
 
 ---
@@ -51,7 +51,7 @@
 | File Name             | Status        | Notes / TODOs                                                                 |
 |----------------------|---------------|------------------------------------------------------------------------------|
 | cloudSetup.md         | ⚠️ Missing (directory not found) | Directory `automation-stack/docs/deprecated/` not found. Original status: ❌ Obsolete Logic. Original TODO: Was tied to Replit—replace with self-hosted Docker flow. |
-| legacyNetworkMap.md   | ⚠️ Missing (directory not found) | Directory `automation-stack/docs/deprecated/` not found. Original status: ⏳ To Be Rebuilt. Original TODO: Update for new `mcp-net` topology and hostname-based routing. |
+| legacyNetworkMap.md   | ⚠️ Missing (directory not found) | Directory `automation-stack/docs/deprecated/` not found. Original status: ⏳ To Be Rebuilt. Original TODO: Update for new `auto-stack-net` topology and hostname-based routing. |
 | agent_pipes.txt       | ⚠️ Missing (directory not found) | Directory `automation-stack/docs/deprecated/` not found. Original status: ⏳ To Be Rebuilt. Original TODO: Refactor as diagram showing webhook and container traffic. |
 
 ---

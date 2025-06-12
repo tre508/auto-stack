@@ -76,11 +76,11 @@ Controller is the central FastAPI-based orchestration service component that act
 - **`FREQTRADE_PASSWORD`**: Freqtrade API authentication password
 
 ### Docker Configuration
-- **Service Name**: `controller_mcp` (or `controller`)
+- **Service Name**: `controller_auto` (or `controller`)
 - **Build Context**: `./controller` directory
-- **Network**: `mcp-net` for internal service communication
+- **Network**: `auto-stack-net` for internal service communication
 - **Port Mapping**: Configurable via `CONTROLLER_PORT` environment variable
-- **Dependencies**: `mem0`, `n8n_mcp`, and other stack services
+- **Dependencies**: `mem0`, `n8n_auto`, and other stack services
 
 ### Dependencies
 - **FastAPI**: Web framework for API endpoints
@@ -114,7 +114,7 @@ Controller is the central FastAPI-based orchestration service component that act
 
 ### Health Checks
 - **Controller Status**: `GET /api/v1/status`
-- **Service Logs**: `docker logs controller_mcp`
+- **Service Logs**: `docker logs controller_auto`
 - **OpenAPI Docs**: Access `/docs` endpoint for API documentation
 
 ### Integration Testing

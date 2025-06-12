@@ -1,15 +1,15 @@
 # Freqtrade-Controller Integration Guide
 
-**Note for AI Agent:** This guide explains how the FastAPI Controller (`controller_mcp` service) interacts with Freqtrade. Use this document to understand how the Controller authenticates with Freqtrade, calls its API, and what configurations are necessary on both the Controller and Freqtrade side for this integration to function.
+**Note for AI Agent:** This guide explains how the FastAPI Controller (`controller_auto` service) interacts with Freqtrade. Use this document to understand how the Controller authenticates with Freqtrade, calls its API, and what configurations are necessary on both the Controller and Freqtrade side for this integration to function.
 
 ## Purpose
 <!-- source: docs/setup/04_Cross_Stack_Integration_Guide.md, docs/setup/05_Agent_Capabilities_and_Interaction.md -->
-This document details how the FastAPI Controller (`controller_mcp` service) integrates with and manages interactions with the Freqtrade API. The Controller serves as a secure and potentially logic-augmented bridge, enabling other services within the `automation-stack` (such as `freq-chat` or n8n agent workflows) to access Freqtrade functionalities without needing to handle Freqtrade API specifics like authentication directly.
+This document details how the FastAPI Controller (`controller_auto` service) integrates with and manages interactions with the Freqtrade API. The Controller serves as a secure and potentially logic-augmented bridge, enabling other services within the `automation-stack` (such as `freq-chat` or n8n agent workflows) to access Freqtrade functionalities without needing to handle Freqtrade API specifics like authentication directly.
 
 ## Architecture
 <!-- source: docs/setup/04_Cross_Stack_Integration_Guide.md -->
 The FastAPI Controller is a Python application running as part of the `automation-stack`. Its key architectural roles in Freqtrade integration are:
-*   **Communication Bridge:** It communicates with the Freqtrade API (typically exposed at `http://freqtrade_devcontainer:8080/api/v1/...`) over the shared Docker network (e.g., `mcp-net`).
+*   **Communication Bridge:** It communicates with the Freqtrade API (typically exposed at `http://freqtrade_devcontainer:8080/api/v1/...`) over the shared Docker network (e.g., `auto-stack-net`).
 *   **Authentication Handler:** It manages the JWT (JSON Web Token) authentication required by the Freqtrade API, abstracting this complexity from its clients.
 *   **Custom API Endpoints:** It exposes its own set of API endpoints (e.g., `/api/v1/freqtrade/status`) that can trigger specific Freqtrade operations or data retrieval.
 
@@ -83,10 +83,10 @@ The FastAPI Controller must implement robust error handling for its interactions
 
 ## Troubleshooting
 <!-- source: FT_int_guide.md (adapted) -->
-*   **Action: Examine Controller Logs.** Check the Docker logs for the `controller_mcp` service: `docker logs controller_mcp`. Look for error messages related to Freqtrade API calls, authentication failures, or network issues.
+*   **Action: Examine Controller Logs.** Check the Docker logs for the `controller_auto` service: `docker logs controller_auto`. Look for error messages related to Freqtrade API calls, authentication failures, or network issues.
 *   **Action: Verify Environment Variables.** Ensure that `FREQTRADE_API_URL`, `FREQTRADE_API_USER`, and `FREQTRADE_API_PASSWORD` are correctly set in the Controller's environment and are available to the service.
-*   **Action: Test Freqtrade API Directly from Controller Container.** To isolate whether the issue is with the Controller's logic or Freqtrade itself, execute `curl` commands from within the `controller_mcp` container:
-    1.  Access the container shell: `docker exec -it controller_mcp bash`
+*   **Action: Test Freqtrade API Directly from Controller Container.** To isolate whether the issue is with the Controller's logic or Freqtrade itself, execute `curl` commands from within the `controller_auto` container:
+    1.  Access the container shell: `docker exec -it controller_auto bash`
     2.  Test authentication (replace `your_freqtrade_user` and `your_freqtrade_pass` with actual credentials):
         ```bash
         curl -u your_freqtrade_user:your_freqtrade_pass -X POST http://freqtrade_devcontainer:8080/api/v1/token/user
@@ -97,5 +97,5 @@ The FastAPI Controller must implement robust error handling for its interactions
         TOKEN="<paste_access_token_here>"
         curl -H "Authorization: Bearer $TOKEN" http://freqtrade_devcontainer:8080/api/v1/status
         ```
-*   **Action: Confirm Network Connectivity.** Verify that the `controller_mcp` container can resolve and reach the `freqtrade_devcontainer` service name on the shared Docker network (e.g., `mcp-net`).
+*   **Action: Confirm Network Connectivity.** Verify that the `controller_auto` container can resolve and reach the `freqtrade_devcontainer` service name on the shared Docker network (e.g., `auto-stack-net`).
 *   **Action: Check Freqtrade API Status.** Ensure the Freqtrade API is enabled, running, and responsive as detailed in the [Freqtrade Master Integration Guide](./FT_int_guide.md#troubleshooting-common-integration-issues).

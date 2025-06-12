@@ -72,13 +72,13 @@ Technical reference documentation and architecture guides:
 
 ### Technical References
 - [`environment_variables.md`](./environment_variables.md) - Complete environment variable index
-- [`MCP_Tool_list.md`](./MCP_Tool_list.md) - Available MCP tools for Cursor integration
+- [`mcp-tool-list.md`](./mcp-tool-list.md) - Available MCP tools for Cursor integration
 - [`mcp_tools_reference.md`](./mcp_tools_reference.md) - MCP tool configuration and usage
 - [`obsidian_service_docs.md`](./obsidian_service_docs.md) - Obsidian integration documentation
 
 ### Meta Documentation
-- [`DocsUpdateHistory.md`](./DocsUpdateHistory.md) - Documentation change history
-- [`DocsIndex.md`](./DocsIndex.md) - This comprehensive index
+- [`docs-update-history.md`](./docs-update-history.md) - Documentation change history
+- [`docs-index.md`](./docs-index.md) - This comprehensive index
 - [`agent-task.md`](./agent-task.md) - Agent task management patterns
 - [`phase 5.md`](./phase 5.md) - Phase 5 standardization instructions
 

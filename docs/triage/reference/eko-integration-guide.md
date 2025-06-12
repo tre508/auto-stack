@@ -157,9 +157,11 @@ Eko is a JavaScript library and cannot be directly imported into Python. Instead
     // Initialize Eko and load tools
     Eko.tools = loadTools();
     const eko = new Eko({
-      llm: process.env.EKO_LLM_PROVIDER || "claude", // e.g., "claude", "openai"
-      apiKey: process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY,
-      modelName: process.env.EKO_MODEL_NAME || "claude-3-5-sonnet-20241022",
+      // llm provider and modelName could be hardcoded or sourced from other env vars
+      // if EKO_LLM_PROVIDER and EKO_MODEL_NAME are deprecated
+      llm: "claude", // Example: default to claude or determine from other keys
+      apiKey: process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY, // OPENAI_API_KEY could be OpenRouter key
+      modelName: "claude-3-5-sonnet-20241022", // Example: default model
     });
 
     const app = express();
@@ -200,7 +202,7 @@ Eko is a JavaScript library and cannot be directly imported into Python. Instead
 
 ### 6.4 Embedding Eko into n8n Workflows
 
-* **Custom HTTP Request**: Use an "HTTP Request" node to call `http://controller_mcp:8000/api/v1/execute_eko` with a JSON payload containing `{"prompt": "…"}`.
+* **Custom HTTP Request**: Use an "HTTP Request" node to call `http://controller_auto:5050/api/v1/execute_eko` with a JSON payload containing `{"prompt": "…"}`.
 * **MCP Server Trigger**: Expose the above endpoint as a callable n8n tool.
 * On response, parse `result` and pass to downstream nodes.
 
@@ -224,7 +226,7 @@ Custom tools and execution hooks for Eko are configured within the Node.js Eko s
       async run(input) {
         console.log(`Node.js tool executing myCustomPythonTool with input: ${JSON.stringify(input)}`);
         // Example: Make an HTTP call back to the Python controller if needed
-        // const response = await fetch('http://controller_mcp:8000/api/my_python_function', { /* ... */ });
+        // const response = await fetch('http://controller_auto:5050/api/my_python_function', { /* ... */ });
         return `Result from Node.js tool: ${input.param}`;
       }
     };
@@ -293,4 +295,4 @@ This flow demonstrates the separation of concerns: Python for orchestration and 
 
 * **SDK errors**: Check that your `ANTHROPIC_API_KEY` or equivalent is set and valid.
 * **Workflow failures**: Inspect Controller logs and Eko hook logs.
-* **Network issues**: Ensure `controller_mcp` and other services share `mcp-net`
+* **Network issues**: Ensure `controller_auto` and other services share `auto-stack-net`

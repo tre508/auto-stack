@@ -16,18 +16,18 @@ The `freqtrade` environment runs as a VS Code Dev Container, ensuring a consiste
 
 ### 2. Key Interfacing Services from `automation-stack`
 Several services within the `automation-stack` interact with Freqtrade:
-*   **FastAPI Controller (`controller_mcp`):** This Python-based service often acts as the primary bridge to Freqtrade. It makes authenticated API calls to Freqtrade and can expose simplified endpoints for other services or agents.
+*   **FastAPI Controller (`controller_auto`):** This Python-based service often acts as the primary bridge to Freqtrade. It makes authenticated API calls to Freqtrade and can expose simplified endpoints for other services or agents.
     <!-- source: docs/setup/04_Cross_Stack_Integration_Guide.md, docs/setup/01_Automation_Stack_Overview.md -->
-*   **n8n (`n8n_mcp`):** The workflow automation platform. n8n can interact with Freqtrade in multiple ways:
+*   **n8n (`n8n_auto`):** The workflow automation platform. n8n can interact with Freqtrade in multiple ways:
     *   Directly polling the Freqtrade API.
     *   Indirectly via the FastAPI Controller.
     *   Orchestrating `freqtrade` CLI commands using its "Execute Command" node, often within agent-based workflows.
     <!-- source: docs/setup/04_Cross_Stack_Integration_Guide.md, docs/services/n8n/prompt_library/CentralBrain.md -->
-*   **Mem0 (`mem0_mcp`):** The memory service. While Mem0 does not directly connect to Freqtrade, it supports Freqtrade-related tasks by providing persistent memory and knowledge storage for the agents and workflows (like n8n or the Controller) that manage or analyze Freqtrade operations.
+*   **Mem0 (`mem0_auto`):** The memory service. While Mem0 does not directly connect to Freqtrade, it supports Freqtrade-related tasks by providing persistent memory and knowledge storage for the agents and workflows (like n8n or the Controller) that manage or analyze Freqtrade operations.
     <!-- source: docs/setup/02_Trading.md, docs/setup/05_Agent_Capabilities_and_Interaction.md -->
 
 ### 3. Network Configuration for Integration
-For successful integration, the Freqtrade container and the relevant `automation-stack` services must reside on the same Docker network (e.g., `mcp-net`). This allows services to reach the Freqtrade API, typically at `http://freqtrade_devcontainer:8080/api/v1/...` (using the Freqtrade container's service name).
+For successful integration, the Freqtrade container and the relevant `automation-stack` services must reside on the same Docker network (e.g., `auto-stack-net`). This allows services to reach the Freqtrade API, typically at `http://freqtrade_devcontainer:8080/api/v1/...` (using the Freqtrade container's service name).
 <!-- source: docs/setup/02_Trading.md, docs/setup/Freqtrade_Project_Checklist.md -->
 
 ## Integration Strategies
@@ -105,7 +105,7 @@ To enable API access, the Freqtrade API server **must** be enabled and configure
 <!-- source: docs/services/n8n/n8n_freqtrade_webhook_ideas.md, docs/setup/04_Cross_Stack_Integration_Guide.md -->
 
 ### 2. Docker Network Configuration
-The Freqtrade container must be part of the shared Docker network (e.g., `mcp-net`) that the `automation-stack` services use for inter-container communication. This is typically defined in Freqtrade's `docker-compose.yml` file.
+The Freqtrade container must be part of the shared Docker network (e.g., `auto-stack-net`) that the `automation-stack` services use for inter-container communication. This is typically defined in Freqtrade's `docker-compose.yml` file.
 <!-- source: docs/setup/02_Trading.md, docs/setup/Freqtrade_Project_Checklist.md -->
 
 ### 3. Database Configuration (for n8n DB Monitoring)
@@ -125,7 +125,7 @@ If direct file access is required (e.g., for backtest results), ensure Docker vo
     *   Verify the Freqtrade container is running (`docker ps`).
     *   Check Freqtrade logs (`docker logs freqtrade_devcontainer`) for startup errors.
     *   Confirm `api_server.enabled` is `true` and `listen_ip_address` is `0.0.0.0` in `user_data/config.json`.
-    *   Ensure the Freqtrade container is on the correct shared Docker network (e.g., `mcp-net`) with other services.
+    *   Ensure the Freqtrade container is on the correct shared Docker network (e.g., `auto-stack-net`) with other services.
 *   Test connectivity from another container on the same network: `docker exec -it <another_container_name> curl http://freqtrade_devcontainer:8080/api/v1/ping`. **Action:** Perform this test if direct API access issues are suspected.
 
 *   **Authentication Errors (401 Unauthorized):**

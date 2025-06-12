@@ -12,7 +12,7 @@ Mem0 is a memory management service component in the automation stack.
 This integration aims to fulfill the goals from `mem0_task_guide.md`:
 
 -   **Re-establish Mem0 Integration**: Achieved by setting up Mem0 as a local Docker service.
--   **Docker Orchestration**: `compose-mcp.yml` manages the Mem0 and Qdrant services.
+-   **Docker Orchestration**: `docker-compose.yml` manages the Mem0 and Qdrant services.
 -   **API Endpoint Connectivity**: Endpoints `/status`, `/memory`, `/search` are available.
 -   **Cross-Service Workflow Support**:
     -   `freq-chat`: Connects via its backend API routes.

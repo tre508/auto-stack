@@ -116,7 +116,7 @@ Set node descriptions for each step. Use `docker exec` format for the Execute Co
 ```txt
 Create a scheduled n8n workflow that:
 - Runs daily at 7:00 AM.
-- Checks the status of Docker containers named "n8n_mcp", "openwebui_mcp", and "traefik_mcp".
+- Checks the status of Docker containers named "n8n_auto", "openwebui_auto", and "traefik_auto".
 - If any of these containers are not in a "running" state, it sends an alert.
 - The alert should list the down containers.
 
@@ -193,11 +193,11 @@ Every agent consists of three core components:
 ```bash
 # List Docker networks and check if both containers are attached
 docker network ls
-docker network inspect mcp-net
+docker network inspect auto-stack-net
 
 # From Freqtrade container, ping Controller and n8n by service name
-ping -c 2 controller_mcp
-ping -c 2 n8n_mcp
+ping -c 2 controller_auto
+ping -c 2 n8n_auto
 
 # From Controller container, curl Freqtrade API
 curl -s http://freqtrade_devcontainer:8080/api/v1/ping

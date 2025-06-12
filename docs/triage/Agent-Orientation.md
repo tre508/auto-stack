@@ -123,7 +123,7 @@ To operate effectively, maintain familiarity with:
 4.  **`docs/TODO.md`**: Current tasks, including `freq-chat` specific items.
 5.  **`docs/setup/MasterGameplan.md`**: Higher-level project goals.
 6.  **`AutomationChecklist.md`**: For verifying system components, including `freq-chat` functionality.
-7.  **`compose-mcp.yml`**: Defines services in the `automation-stack`.
+7.  **`docker-compose.yml`**: Defines services in the `automation-stack`.
 8.  **`controller/controller.py`**: FastAPI controller code.
 9.  **`freq-chat/` directory:** Source code for the Next.js AI Chatbot, including its API routes (`pages/api/` or `app/api/`) which are key integration points.
 10. **`docs/Vercel-integration.md`**: Details on Vercel deployment, environment variables, and API patterns relevant to `freq-chat`.
@@ -206,7 +206,7 @@ For complete setup, configuration, and integration guidance for the self-hosted 
 - **Unified Logging:** All agents log to a unified PostgreSQL database.
 - **Multi-Agent Orchestration:** CentralBrain, manager, and sub-agents for modular automation.
 - **FastAPI Controller/n8n Integration:** As per `docs/n8n/webhookFlows.md`.
-- **Mem0 Memory Service:** Core for memory/knowledge. **Now running locally as the `mem0_mcp` Docker service.**
+- **Mem0 Memory Service:** Core for memory/knowledge. **Now running locally as the `mem0_auto` Docker service.**
 - **`freq-chat` as Primary UI:** All LLM interactions and workflow initiations are now primarily channeled through `freq-chat`. **Mem0 integration with `freq-chat` is key for conversational memory and RAG.**
 - **n8n Workflow Setup Progress:**
     - `n8n_workflow_UnifiedLogging.json` (subworkflow for logging to `agent_logs` table) has been successfully configured and tested.

@@ -42,8 +42,6 @@ Complete index of all environment variables used across the automation-stack ser
 - `XAI_API_KEY` - xAI API key for Grok models
 - `DEEPSEEK_API_KEY` - DeepSeek API key
 - `OPENROUTER_API_KEY` - OpenRouter proxy API key
-- `EKO_LLM_PROVIDER` - LLM provider for EKO service (claude/openai)
-- `EKO_MODEL_NAME` - Specific model name for EKO (default: claude-3-5-sonnet-20241022)
 
 ### OpenRouter Proxy Service
 - `OPENROUTER_PROXY_HOST` - Hostname for Traefik routing (default: openrouter-proxy.localhost)

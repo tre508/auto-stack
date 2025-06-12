@@ -21,7 +21,7 @@
      .dockerignore  
      .env             ← (likely a placeholder or legacy)  
      .env.example     ← blank template for service variables  
-     compose-mcp.yml  ← legacy or starting point for Docker Compose  
+     docker-compose.yml  ← legacy or starting point for Docker Compose  
      create_test_workflow.py  
      load-env.sh  
      README.md        ← high-level introduction  

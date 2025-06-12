@@ -1,0 +1,168 @@
+/home/glenn/projects/auto-stack/docs
+├── depreciated
+│   ├── controller-env.md
+│   ├── controller_mcp_Inspect.txt
+│   ├── docs_filetree.txt
+│   ├── eko_service_mcp_Inspect.txt
+│   ├── freq-chat-redis-db.txt
+│   ├── freqdev.local-env.md
+│   ├── gifted_driscoll_(Freqtrade)-Inspect.txt
+│   ├── main-env.md
+│   ├── main-env1.md
+│   ├── mem0_mcp_Inspect.txt
+│   ├── n8n_mcp_Inspect.txt
+│   ├── n8n_test_Inspect.txt
+│   ├── old_docs_filetree.txt
+│   ├── old_full_filetree.txt -> /mnt/d/automation-stack/docs/old_full_filetree.txt
+│   ├── openrouter_proxy_mcp_Inspect.txt
+│   ├── postgres_logging_auto_Inspect.txt
+│   ├── qdrant_mcp_Inspect.txt
+│   ├── traefik_mcp_Inspect.txt
+│   └── wsl_bashrc.txt
+├── filetree.txt
+├── new-stack-agent-guide.md
+└── triage
+    ├── 00_MasterSetup.md
+    ├── 01_Automation.md
+    ├── 02_Trading.md
+    ├── 03_Core_Services_Configuration_and_Verification.md
+    ├── 04_Cross_Stack_Integration_Guide.md
+    ├── 05_Agent_Capabilities_and_Interaction.md
+    ├── 06_Developer_Tools.md
+    ├── API_Contracts.md
+    ├── Agent-Orientation.md
+    ├── AutomationChecklist.md
+    ├── README_agent.md
+    ├── TODO.md
+    ├── auto-stack_guide.md
+    ├── configplan.md
+    ├── docker-rebuild.md
+    ├── integrations
+    │   ├── FT_agent_prompt_guide.md
+    │   ├── FT_int_guide.md
+    │   ├── freqtrade_controller.md
+    │   ├── freqtrade_mem0.md
+    │   └── freqtrade_n8n.md
+    ├── prompts
+    │   ├── README.md
+    │   ├── debugging
+    │   │   └── README.md
+    │   ├── integration
+    │   │   └── README.md
+    │   ├── intelligence
+    │   │   └── README.md
+    │   └── orchestration
+    │       └── README.md
+    ├── qdrant_inspect.txt
+    ├── reference
+    │   ├── FreqBackup
+    │   │   ├── API-Cheet-sheets
+    │   │   │   └── n8n.md
+    │   │   ├── N8N_DOC_AUTOMATION.md
+    │   │   ├── Origional-config.json
+    │   │   ├── PLAN_B_STRATEGY_GUIDE.md
+    │   │   ├── RL_RagsToRiches_Plan.md
+    │   │   ├── config-planB.json
+    │   │   ├── cursor_chat.md
+    │   │   ├── freqaimodels - Copy
+    │   │   │   ├── MinimalFreqAIModel.py
+    │   │   │   ├── RagsToRichesRLModel.py
+    │   │   │   └── run_params.json
+    │   │   ├── models - Copy
+    │   │   │   └── RagsToRichesRLModel
+    │   │   │       └── run_params.json
+    │   │   ├── obsidian_service_docs.md
+    │   │   ├── pipe_mcp.md
+    │   │   ├── planB.md
+    │   │   └── strategies - Copy
+    │   │       ├── KrakenFreqAI.json
+    │   │       ├── KrakenFreqAI.py
+    │   │       ├── MinimalFreqAIStrategy.py
+    │   │       └── sample_strategy.py
+    │   ├── agent-task.md
+    │   ├── analyze_har.py
+    │   ├── docs-index.md
+    │   ├── docs-update-history.md
+    │   ├── dual-stack-architecture.md
+    │   ├── eko-integration-guide.md
+    │   ├── environment_variables.md
+    │   ├── guides
+    │   │   ├── MCP_Filesystem_Setup_Guide.md
+    │   │   ├── MasterGameplan.md
+    │   │   ├── freqtrade_installation.md
+    │   │   ├── huggingface_space_setup.md
+    │   │   ├── mem0_server_guide.md
+    │   │   └── mem0_setup_agent_prompt.md
+    │   ├── har_debug_notes.md
+    │   ├── index.md
+    │   ├── mcp-tool-list.md
+    │   ├── mcp-tools-reference.md
+    │   └── obsidian-service-docs.md
+    └── services
+        ├── controller
+        │   └── Tasklist.md
+        ├── eko
+        │   └── Tasklist.md
+        ├── freq-chat
+        │   ├── Tasklist.md
+        │   ├── final_summary_llm_troubleshooting.md
+        │   └── troubleshooting_llm_connection.md
+        ├── mem0
+        │   ├── TROUBLESHOOTING.md
+        │   ├── Tasklist.md
+        │   ├── bge_migration_instructions.md
+        │   ├── embedder-change.md
+        │   ├── legacy_memory_migration_cleanup.md
+        │   └── troubleshoot_mem0.md
+        ├── n8n
+        │   ├── Tasklist.md
+        │   ├── alternatives.md
+        │   ├── community-nodes.md
+        │   ├── container_inspect.md
+        │   ├── n8nChat.md
+        │   ├── n8n_doc_mirror_update.md
+        │   ├── n8n_freqtrade_webhook_ideas.md
+        │   ├── n8n_multi_agent_concepts.md
+        │   ├── prompt_library
+        │   │   ├── CentralBrain.md
+        │   │   ├── UnifiedLogging.md
+        │   │   ├── command-prompt-style-guide.md
+        │   │   ├── guide-to-building-agents.md
+        │   │   └── n8nChat_prompt_templates.md
+        │   ├── templates
+        │   │   ├── CentralBrain_Agent.json
+        │   │   ├── Command_Handler.json
+        │   │   ├── Command_Handler_temp.json
+        │   │   ├── Doc_Mirror_Update.json
+        │   │   ├── Freqtrade_Log_Monitor.json
+        │   │   ├── Freqtrade_Task_Runner.json
+        │   │   ├── MCPserver.json
+        │   │   ├── Stock_Analysis.json
+        │   │   ├── centralbrain_bundle
+        │   │   │   ├── CentralBrain_Master.json
+        │   │   │   ├── LLM_ParserAgent.json
+        │   │   │   └── NotificationAgent.json
+        │   │   ├── n8n_workflow_Backtest_Agent.json
+        │   │   ├── n8n_workflow_CentralBrain_Agent.json
+        │   │   ├── n8n_workflow_Delete_Qdrant_Collection.json
+        │   │   ├── n8n_workflow_Docker_Health_Check.json
+        │   │   ├── n8n_workflow_FreqtradeSpecialist_Agent.json
+        │   │   ├── n8n_workflow_Git_Repo_Commit_Notifier.json
+        │   │   ├── n8n_workflow_LLM_Research_Trigger.json
+        │   │   ├── n8n_workflow_Mem0_Memory_Logger.json
+        │   │   ├── n8n_workflow_Mem0_Search.json
+        │   │   ├── n8n_workflow_Summarization_Agent.json
+        │   │   └── n8n_workflow_UnifiedLogging.json
+        │   ├── webhookFlows.md
+        │   └── workflows
+        │       ├── AgentHub.md
+        │       ├── CentralBrainFlow.md
+        │       └── Superflow-Orchestration-Map.md
+        ├── proxy
+        │   └── Tasklist.md
+        └── vercel
+            ├── integration.md
+            ├── nextjs_ai_chatbot_customization.md
+            ├── setup.md
+            ├── troubleshooting.md
+            └── usage.md

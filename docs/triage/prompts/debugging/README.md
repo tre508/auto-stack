@@ -17,16 +17,16 @@ Debugging prompts provide structured approaches to:
 ### Controller Service
 ```bash
 # Health check
-curl -f http://controller_mcp:8000/health
+curl -f http://controller_auto:5050/health
 
 # Check logs for errors
-docker logs controller_mcp --tail 100 | grep -i error
+docker logs controller_auto --tail 100 | grep -i error
 
 # Verify Flask endpoints
-curl -X GET http://controller_mcp:8000/cmd/status
+curl -X GET http://controller_auto:5050/cmd/status
 
 # Test async processing
-curl -X POST http://controller_mcp:8000/cmd/test \
+curl -X POST http://controller_auto:5050/cmd/test \
   -H "Content-Type: application/json" \
   -d '{"test": "data"}'
 ```
@@ -34,16 +34,16 @@ curl -X POST http://controller_mcp:8000/cmd/test \
 ### n8n Service
 ```bash
 # Health check
-curl -f http://n8n_mcp:5678/healthz
+curl -f http://n8n_auto:5678/healthz
 
 # Check workflow execution status
-curl -X GET http://n8n_mcp:5678/api/v1/executions
+curl -X GET http://n8n_auto:5678/api/v1/executions
 
 # Verify webhook endpoints
-curl -X POST http://n8n_mcp:5678/webhook/test
+curl -X POST http://n8n_auto:5678/webhook/test
 
 # Check for failed workflows
-docker logs n8n_mcp --tail 100 | grep -i "execution.*failed"
+docker logs n8n_auto --tail 100 | grep -i "execution.*failed"
 ```
 
 ### Freqtrade Service
@@ -67,15 +67,15 @@ curl -H "Authorization: Bearer <token>" \
 ### Mem0 Service
 ```bash
 # Health check
-curl -f http://mem0_mcp:8000/health
+curl -f http://mem0_auto:8000/health
 
 # Test memory operations
-curl -X POST http://mem0_mcp:8000/v1/memories \
+curl -X POST http://mem0_auto:8000/v1/memories \
   -H "Content-Type: application/json" \
   -d '{"messages": [{"role": "user", "content": "test"}], "user_id": "debug"}'
 
 # Check memory retrieval
-curl -X GET http://mem0_mcp:8000/v1/memories?user_id=debug
+curl -X GET http://mem0_auto:8000/v1/memories?user_id=debug
 ```
 
 ## Network Diagnostics
@@ -83,27 +83,27 @@ curl -X GET http://mem0_mcp:8000/v1/memories?user_id=debug
 ### Docker Network Connectivity
 ```bash
 # Inspect network configuration
-docker network inspect mcp-net
+docker network inspect auto-stack-net
 
 # Test inter-container connectivity
-docker exec controller_mcp ping -c 3 n8n_mcp
-docker exec n8n_mcp ping -c 3 freqtrade_devcontainer
-docker exec controller_mcp ping -c 3 mem0_mcp
+docker exec controller_auto ping -c 3 n8n_auto
+docker exec n8n_auto ping -c 3 freqtrade_devcontainer
+docker exec controller_auto ping -c 3 mem0_auto
 
 # Check port accessibility
-docker exec controller_mcp nc -zv n8n_mcp 5678
-docker exec n8n_mcp nc -zv freqtrade_devcontainer 8080
+docker exec controller_auto nc -zv n8n_auto 5678
+docker exec n8n_auto nc -zv freqtrade_devcontainer 8080
 ```
 
 ### External Connectivity
 ```bash
 # Test internet connectivity from containers
-docker exec controller_mcp curl -I https://httpbin.org/get
-docker exec n8n_mcp curl -I https://api.github.com
+docker exec controller_auto curl -I https://httpbin.org/get
+docker exec n8n_auto curl -I https://api.github.com
 
 # Verify DNS resolution
-docker exec controller_mcp nslookup github.com
-docker exec n8n_mcp nslookup api.openai.com
+docker exec controller_auto nslookup github.com
+docker exec n8n_auto nslookup api.openai.com
 ```
 
 ## Database Diagnostics
@@ -166,24 +166,24 @@ GROUP BY agent;
 docker stats --no-stream
 
 # Detailed resource analysis
-docker exec controller_mcp top -bn1
-docker exec n8n_mcp ps aux
+docker exec controller_auto top -bn1
+docker exec n8n_auto ps aux
 
 # Disk usage
-docker exec controller_mcp df -h
+docker exec controller_auto df -h
 docker system df
 ```
 
 ### API Response Times
 ```bash
 # Measure endpoint response times
-time curl -s http://controller_mcp:8000/health
-time curl -s http://n8n_mcp:5678/healthz
+time curl -s http://controller_auto:5050/health
+time curl -s http://n8n_auto:5678/healthz
 time curl -s http://freqtrade_devcontainer:8080/api/v1/ping
 
 # Load testing with curl
 for i in {1..10}; do
-  time curl -s http://controller_mcp:8000/cmd/status > /dev/null
+  time curl -s http://controller_auto:5050/cmd/status > /dev/null
 done
 ```
 
@@ -232,13 +232,13 @@ docker logs service_name | grep -i auth
 **Diagnosis**:
 ```bash
 # Check n8n execution logs
-curl -X GET http://n8n_mcp:5678/api/v1/executions?limit=10
+curl -X GET http://n8n_auto:5678/api/v1/executions?limit=10
 
 # Check for resource constraints
-docker exec n8n_mcp ps aux | grep node
+docker exec n8n_auto ps aux | grep node
 
 # Verify webhook endpoints
-curl -X POST http://n8n_mcp:5678/webhook/test -d '{"test": "data"}'
+curl -X POST http://n8n_auto:5678/webhook/test -d '{"test": "data"}'
 ```
 
 **Solutions**:
@@ -279,7 +279,7 @@ docker exec service_name ps aux --sort=-%mem | head
 echo "=== Automation Stack Health Check ==="
 
 # Service availability
-services=("controller_mcp:8000" "n8n_mcp:5678" "freqtrade_devcontainer:8080" "mem0_mcp:8000")
+services=("controller_auto:5050" "n8n_auto:5678" "freqtrade_devcontainer:8080" "mem0_auto:8000")
 for service in "${services[@]}"; do
     if curl -f -s "http://$service/health" > /dev/null 2>&1; then
         echo "✅ $service: HEALTHY"
@@ -296,7 +296,7 @@ else
 fi
 
 # Network connectivity
-if docker exec controller_mcp ping -c 1 n8n_mcp > /dev/null 2>&1; then
+if docker exec controller_auto ping -c 1 n8n_auto > /dev/null 2>&1; then
     echo "✅ Network: CONNECTIVITY OK"
 else
     echo "❌ Network: CONNECTIVITY ISSUES"
@@ -326,7 +326,7 @@ ORDER BY timestamp DESC;
 "
 
 # Check container logs for errors
-for container in controller_mcp n8n_mcp freqtrade_devcontainer mem0_mcp; do
+for container in controller_auto n8n_auto freqtrade_devcontainer mem0_auto; do
     echo "--- $container recent errors ---"
     docker logs "$container" --since 1h 2>&1 | grep -i error | tail -5
 done

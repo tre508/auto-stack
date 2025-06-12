@@ -71,11 +71,11 @@ Chrome Web Store
 
 ### Advanced Configuration: Using Self-Hosted LLMs / Proxies
 
-n8nChat can be configured to work with your local `automation-stack`, including the `openrouter_proxy_mcp`, allowing you to leverage a wide range of models via OpenRouter.
+n8nChat can be configured to work with your local `auto-stack`, including the `openrouter_proxy_auto`, allowing you to leverage a wide range of models via OpenRouter.
 
-**Using `openrouter_proxy_mcp` with n8nChat:**
+**Using `openrouter_proxy_auto` with n8nChat:**
 
-1.  **Ensure `openrouter_proxy_mcp` is Running:** Verify that your `openrouter_proxy_mcp` service is operational and accessible via `http://openrouter-proxy.localhost/v1` (or your configured host).
+1.  **Ensure `openrouter_proxy_auto` is Running:** Verify that your `openrouter_proxy_auto` service is operational and accessible via `http://openrouter-proxy.localhost/v1` (or your configured host).
 2.  **n8nChat Extension Settings:**
     *   Open the n8nChat browser extension's settings/options page.
     *   Look for a field related to "API Endpoint," "Base URL," or specifically "OpenAI Base URL."
@@ -83,14 +83,14 @@ n8nChat can be configured to work with your local `automation-stack`, including 
     *   For the API Key, you can typically enter any non-empty string (e.g., "dummykey" or "none"), as the actual `OPENROUTER_API_KEY` is injected by your proxy service. Refer to the n8nChat extension's specific instructions if it has strict API key format requirements.
 3.  **Connect to Your n8n Instance:** Ensure n8nChat is also configured with the URL of your self-hosted n8n instance (e.g., `http://n8n.localhost`).
 
-With this setup, when n8nChat generates workflows or uses its AI features that require an LLM, it will route requests through your `openrouter_proxy_mcp` service.
+With this setup, when n8nChat generates workflows or uses its AI features that require an LLM, it will route requests through your `openrouter_proxy_auto` service.
 
 **Interacting with n8n Workflows Exposed as Tools (MCP):**
 
 n8n now includes "MCP Server Trigger" and "MCP Client" nodes. This allows for more advanced AI agent setups:
 *   **MCP Server Trigger:** You can create an n8n workflow that performs a specific task (e.g., interacting with Freqtrade, querying a database) and expose it as a "tool" using the MCP Server Trigger.
 *   **n8nChat as a Client:** While direct integration details would depend on n8nChat's evolving capabilities, conceptually, an AI assistant like n8nChat could be directed to use tools exposed by your n8n MCP Server.
-*   **Workflows Calling LLMs via Proxy:** Workflows created or modified by n8nChat can themselves contain HTTP Request nodes or the "MCP Client" node configured to use your `openrouter_proxy_mcp` for their own LLM calls (e.g., for data summarization within the workflow).
+*   **Workflows Calling LLMs via Proxy:** Workflows created or modified by n8nChat can themselves contain HTTP Request nodes or the "MCP Client" node configured to use your `openrouter_proxy_auto` for their own LLM calls (e.g., for data summarization within the workflow).
 
 This combination allows n8nChat to not only build standard workflows but also to potentially orchestrate more complex automations that leverage both your local proxy for LLM access and specialized tools exposed by your n8n workflows.
 

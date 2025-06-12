@@ -39,7 +39,7 @@ This is a key integration for enabling automated Freqtrade operations from the `
   - Freqtrade's API uses JWT (JSON Web Token) authentication, configured via `api_server.username` and `api_server.password` in `user_data/config.json`.
   - **Flow:**
     1. The Controller requests a token from `POST /api/v1/token/auth` using the username and password.
-    2. Freqtrade responds with an `access_token`.
+        2. Freqtrade responds with an `access_token`.
     3. The Controller includes this token in an `Authorization: Bearer <token>` header for all subsequent Freqtrade API calls.
     4. The Controller is responsible for managing token expiration and renewal.
 - **Example Request (after auth):**

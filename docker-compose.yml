@@ -161,6 +161,8 @@ services:
       - "/d/docker-volumes/qdrant_storage:/qdrant/storage"
     networks:
       - auto-stack-net
+    environment:
+      - QDRANT__SERVICE__API_KEY=localqdrantkey123
 
   mem0_auto:
     build:
@@ -248,4 +250,4 @@ networks:
     driver: bridge
     name: auto-stack-net
 
-# No top-level volumes: key if all volumes are host-mounted directly in services 
+# No top-level volumes: key if all volumes are host-mounted directly in services
