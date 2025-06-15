@@ -15,18 +15,19 @@ The controller acts as a central API gateway for certain operations within the `
 **A. Using Docker Compose (Recommended):**
 - Ensure your `docker-compose.yml` includes the controller service, e.g.:
   ```yaml
-  controller_mcp:
+  controller_auto:
     build: ./controller
     ports:
-      - "5050:5050"
+      - "5050:5050" # This port mapping should be defined by CONTROLLER_EXTERNAL_PORT in root .env
     environment:
-      N8N_WEBHOOK_URL: "http://n8n_mcp:5678/webhook/your-master-workflow-id"
+      # N8N_WEBHOOK_URL is now in root .env and picked up by controller_auto
+      # CONTROLLER_PORT (internal) is in controller/.env
     depends_on:
-      - n8n_mcp
+      - n8n_auto
   ```
 - Start the service:
   ```sh
-  docker-compose up -d controller_mcp
+  docker-compose up -d controller_auto
   ```
 - Confirm it's running:
   ```sh
@@ -109,7 +110,7 @@ print("/notify response:", resp.json())
 
 **B. Sending Notifications to Controller (/notify):**
 1. At the end of your n8n workflow, add an "HTTP Request" node.
-2. Set method to POST, URL to `http://controller_mcp:5050/api/v1/notify` (or your host/port).
+2. Set method to POST, URL to `http://controller_auto:5050/api/v1/notify` (or your host/port, ensuring controller_auto listens on 5050 internally).
 3. Set body to JSON and map fields as needed (e.g., event_type, workflow_id, status, details).
 
 ---
@@ -160,8 +161,8 @@ The primary mechanism for n8n to be triggered *by the controller* or *via the co
 ### Example Flow:
 
 1.  An external application or a user makes a POST request to `http://controller.localhost/api/v1/execute` (assuming Traefik routing) with a specific JSON payload.
-2.  The `controller_mcp` service receives this request.
-3.  The controller forwards the payload to the `N8N_WEBHOOK_URL` (e.g., `http://n8n_mcp:5678/webhook/your-master-workflow-id`).
+2.  The `controller_auto` service receives this request.
+3.  The controller forwards the payload to the `N8N_WEBHOOK_URL` (e.g., `http://n8n_auto:5678/webhook/your-master-workflow-id` - this URL is defined in the root `.env`).
 4.  The target n8n workflow is triggered and processes the payload.
 
 This pattern is useful for centralizing how n8n workflows are triggered and for adding an intermediary layer (the controller) if needed for authentication, validation, or logging before a task is passed to n8n.
@@ -186,7 +187,7 @@ The controller also has a `/notify` endpoint that can be used by n8n (or other s
     2.  Logs the received payload.
     3.  Returns a confirmation message.
 *   **n8n Workflow Setup:**
-    *   An n8n workflow can use an "HTTP Request" node to send a POST request to the controller's `/notify` endpoint (e.g., `http://controller_mcp:8000/api/v1/notify`).
+    *   An n8n workflow can use an "HTTP Request" node to send a POST request to the controller's `/notify` endpoint (e.g., `http://controller_auto:5050/api/v1/notify`).
 
 ### Example Use Case:
 
@@ -231,4 +232,4 @@ n8n can receive commands from users via WhatsApp, email, or other supported chan
 - Handle errors gracefully and notify user if command fails.
 - Document endpoints and update your workflow docs as new channels are added.
 
-This pattern makes your agent system accessible from anywhere, not just via web dashboards or internal APIs. 
+This pattern makes your agent system accessible from anywhere, not just via web dashboards or internal APIs.

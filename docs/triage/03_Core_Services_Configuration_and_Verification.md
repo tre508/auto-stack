@@ -42,19 +42,20 @@ services:
     # Build context points to the Next.js app directory
     build: { context: ./freq-chat, dockerfile: Dockerfile }
     # Environment variables for the Next.js app
-    env_file: ["./freq-chat/.env.local"]
+    # Environment variables for the Next.js app are typically in ./freq-chat/.env.development.local
+    env_file: ["./freq-chat/.env.development.local"] # Or .env.production
     volumes:
       # Mount the source code for hot-reloading in development
       - "./freq-chat:/app"
       # Avoid overwriting node_modules inside the container
-      - "/app/node_modules"
+      - "/app/node_modules" # Standard practice for Node.js development
     ports:
-      # Map host port 3001 to container port 3000
-      - "3001:3000"
+      # Map host port (from .env) to container port 3000
+      - "${FREQCHAT_EXTERNAL_PORT:-3001}:3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.freq-chat.rule=Host(`chat.localhost`)"
-      - "traefik.http.services.freq-chat.loadbalancer.server.port=3000"
+      - "traefik.http.routers.freq_chat_auto.rule=Host(`${FREQCHAT_TRAEFIK_HOST:-chat.localhost}`)"
+      - "traefik.http.services.freq_chat_auto.loadbalancer.server.port=3000"
     networks:
       - auto-stack-net
 ```
@@ -74,12 +75,16 @@ services:
   traefik_auto:
     image: traefik:v2.11
     # Command to use the static configuration file
-    command: ["--configFile=/etc/traefik/traefik.yml"]
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
     ports:
       # HTTP, HTTPS, and Dashboard ports
       - "80:80"
       - "443:443"
-      - "8081:8080" # Mapping dashboard to 8081 to avoid conflicts
+      - "8080:8080" # Traefik dashboard
     volumes:
       # Mount the Docker socket to discover services
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -136,8 +141,8 @@ services:
     ports: ["5678:5678"]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.n8n.rule=Host(`n8n.localhost`)"
-      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+      - "traefik.http.routers.n8n_auto.rule=Host(`${N8N_TRAEFIK_HOST:-n8n.localhost}`)"
+      - "traefik.http.services.n8n_auto.loadbalancer.server.port=5678"
     networks: [auto-stack-net]
 ```
 
@@ -146,7 +151,7 @@ services:
 * **Purpose:** Self-hosted, centralized memory and knowledge management service using Qdrant as its vector store and an OpenRouter proxy for LLM/embedding tasks. Exposes a REST API.
 * **Local Directory:** `automation-stack/mem0/server/`
 * **Configuration:**
-  * **`docker-compose.yml`:** Defines the `mem0_auto` service, its build context (`./mem0/server`), Dockerfile, environment variables (see below), port mapping (e.g., `${MEM0_HOST_PORT}:8000`), volumes (`./mem0/server/config.yaml:/app/config.yaml:ro`, `mem0_data_auto:/data`), network (`auto-stack-net`), and dependencies (qdrant, controller_auto).
+  * **`docker-compose.yml`:** Defines the `mem0_auto` service, its build context (`./mem0/server`), Dockerfile, environment variables (see below), port mapping (e.g., `${MEM0_EXTERNAL_PORT}:8000`), volumes (`./mem0/server/config.yaml:/app/config.yaml:ro`, `mem0_data_auto:/data`), network (`auto-stack-net`), and dependencies (qdrant_auto, openrouter_proxy_auto).
   * **`mem0/server/config.yaml`:** Configures the Mem0 instance:
     * `vector_store`: Provider `qdrant`, host `qdrant_auto`, port `6333`.
     * `llm`: Provider `openai`, model (e.g., `tngtech/deepseek-r1t-chimera:free`). This request will be proxied by the controller.
@@ -162,12 +167,12 @@ services:
   * **Dependencies:** `mem0/server/requirements.txt` (includes `mem0ai`, `fastapi`, `uvicorn`, `qdrant-client`, `openai`).
 * **Verification:**
   * **Container Status:** From a WSL terminal, run `docker ps | grep mem0_auto` (should be running).
-  * **Server Logs:** From a WSL terminal, run `docker logs mem0_auto`. Check for successful initialization and connection to Qdrant. It will log the `OPENAI_BASE_URL` it's using (which should be the controller's proxy URL).
-  * **Controller Logs:** From a WSL terminal, run `docker logs controller_auto`. Check for logs related to receiving requests from Mem0 and proxying them to either the HF Space or OpenRouter Proxy.
-  * **Health Check Endpoint (Mem0):** From a WSL terminal, run `curl http://${MEM0_HOST:-mem0.localhost}:${MEM0_HOST_PORT:-7860}/status` (or use Traefik URL `http://${MEM0_HOST}/status`). Expected: `{"status": "Mem0 service is running and client is healthy"}`.
+  * **Server Logs:** From a WSL terminal, run `docker logs mem0_auto`. Check for successful initialization and connection to Qdrant. It will log the `OPENAI_BASE_URL` it's using.
+  * **Controller Logs:** From a WSL terminal, run `docker logs controller_auto`. Check for logs related to receiving requests from Mem0 and proxying them to either the HF Space or OpenRouter Proxy if applicable.
+  * **Health Check Endpoint (Mem0):** From a WSL terminal, run `curl http://${MEM0_TRAEFIK_HOST:-mem0.localhost}:${MEM0_EXTERNAL_PORT:-8000}/status` (or use Traefik URL `http://${MEM0_TRAEFIK_HOST}/status`). Expected: `{"status": "Mem0 service is running and client is healthy"}`.
   * **Memory Operations Test (REST API):**
-    * **Add Memory:** From a WSL terminal, run `curl -X POST http://localhost:${MEM0_HOST_PORT:-7860}/memory -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "Test memory from core verification"}], "user_id": "core_verify_user", "metadata": {"source": "03_Core_Services"}}'`
-    * **Search Memory:** From a WSL terminal, run `curl -X POST http://localhost:${MEM0_HOST_PORT:-7860}/search -H "Content-Type: application/json" -d '{"query": "Test memory from core verification", "user_id": "core_verify_user"}'`
+    * **Add Memory:** From a WSL terminal, run `curl -X POST http://localhost:${MEM0_EXTERNAL_PORT:-8000}/memory -H "Content-Type: application/json" -d '{"messages": [{"role": "user", "content": "Test memory from core verification"}], "user_id": "core_verify_user", "metadata": {"source": "03_Core_Services"}}'`
+    * **Search Memory:** From a WSL terminal, run `curl -X POST http://localhost:${MEM0_EXTERNAL_PORT:-8000}/search -H "Content-Type: application/json" -d '{"query": "Test memory from core verification", "user_id": "core_verify_user"}'`
   * **Data Persistence:**
     * Verify `mem0_data_auto` volume is created and used. This can be checked with `docker volume ls` in a WSL terminal.
     * Restart `mem0_auto` and `qdrant_auto` services and confirm previously added memories can be searched.
@@ -180,18 +185,20 @@ services:
 services:
   mem0_auto:
     build: { context: ./mem0/server, dockerfile: Dockerfile }
-    env_file: [".env"]
+    env_file:
+      - ./.env
+      - ./mem0/.env
     volumes:
       # Mount the service's specific config.yaml
       - "./mem0/server/config.yaml:/app/config.yaml:ro"
       # Mount a named volume for persistent data (history DB, etc.)
-      - "mem0_data_auto:/data"
-    ports: ["${MEM0_HOST_PORT:-7860}:8000"]
-    depends_on: [qdrant_auto]
+      - "mem0_data_auto:/data" # Ensure mem0_data_auto is defined in top-level volumes
+    ports: ["${MEM0_EXTERNAL_PORT:-8000}:8000"] # Internal port 8000 from mem0/.env
+    depends_on: [qdrant_auto, openrouter_proxy_auto]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mem0.rule=Host(`${MEM0_HOST:-mem0.localhost}`)"
-      - "traefik.http.services.mem0.loadbalancer.server.port=8000"
+      - "traefik.http.routers.mem0_auto.rule=Host(`${MEM0_TRAEFIK_HOST:-mem0.localhost}`)"
+      - "traefik.http.services.mem0_auto.loadbalancer.server.port=8000"
     networks: [auto-stack-net]
 ```
 
@@ -255,7 +262,7 @@ services:
     volumes:
       # Mount a named volume for persistent database storage
       - "pgdata_logging_auto:/var/lib/postgresql/data"
-    ports: ["${POSTGRES_LOGGING_PORT:-5433}:5432"]
+    ports: ["${POSTGRES_LOGGING_EXTERNAL_PORT:-5432}:5432"] # Uses var from root .env
     networks: [auto-stack-net]
 ```
 
@@ -280,16 +287,18 @@ services:
 services:
   controller_auto:
     build: { context: ./controller, dockerfile: Dockerfile }
-    env_file: [".env"]
+    env_file:
+      - ./.env
+      - ./controller/.env
     volumes:
       # Mount the controller's source code as read-only
       - "./controller:/app:ro"
-    ports: ["${CONTROLLER_PORT:-5050}:${CONTROLLER_PORT:-5050}"]
-    depends_on: [mem0_auto, postgres_logging_auto, openrouter_proxy_auto]
+    ports: ["${CONTROLLER_EXTERNAL_PORT:-5050}:${CONTROLLER_PORT:-5050}"] # CONTROLLER_PORT from controller/.env
+    depends_on: [n8n_auto, mem0_auto, postgres_logging_auto, openrouter_proxy_auto, bge_embedding_auto]
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.controller.rule=Host(`controller.localhost`)"
-      - "traefik.http.services.controller.loadbalancer.server.port=${CONTROLLER_PORT:-5050}"
+      - "traefik.http.routers.controller_auto.rule=Host(`${CONTROLLER_TRAEFIK_HOST:-controller.localhost}`)"
+      - "traefik.http.services.controller_auto.loadbalancer.server.port=${CONTROLLER_PORT:-5050}"
     networks: [auto-stack-net]
 ```
 
@@ -311,12 +320,14 @@ services:
   openrouter_proxy_auto:
     # Build from the proxy's directory
     build: { context: ./openrouter_proxy, dockerfile: Dockerfile }
-    env_file: [".env"]
-    ports: ["${OPENROUTER_PROXY_PORT:-8000}:3000"]
+    env_file:
+      - ./.env
+      - ./openrouter_proxy/.env
+    ports: ["${OPENROUTER_PROXY_EXTERNAL_PORT:-8001}:8000"] # Internal port 8000 from openrouter_proxy/.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.openrouter-proxy.rule=Host(`openrouter-proxy.localhost`)"
-      - "traefik.http.services.openrouter-proxy.loadbalancer.server.port=3000"
+      - "traefik.http.routers.openrouter_proxy_auto.rule=Host(`${OPENROUTER_PROXY_TRAEFIK_HOST:-openrouter.localhost}`)"
+      - "traefik.http.services.openrouter_proxy_auto.loadbalancer.server.port=8000"
     networks: [auto-stack-net]
 ```
 

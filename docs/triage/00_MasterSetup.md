@@ -190,6 +190,35 @@ cp .env.example .env
 nano .env
 ```
 
+### 3.1 Understanding the `.env` File Hierarchy (New Strategy)
+
+The `auto-stack` project employs a hierarchical approach to managing environment variables to ensure clarity, reduce redundancy, and simplify configuration.
+
+*   **Root `.env` File (`auto-stack/.env`):**
+    *   **Purpose:** This is the central configuration file for all **shared variables** and global secrets.
+    *   **Contents:** Any variable required by two or more services (e.g., `OPENROUTER_API_KEY`, `HF_TOKEN`, `POSTGRES_LOGGING_USER/PASSWORD/DB`, `N8N_API_KEY`), as well as common settings like Traefik hostnames and external port mappings, belong exclusively in this file.
+    *   **Principle:** If a variable is in the root `.env`, it **must not** be duplicated in service-specific `.env` files.
+
+*   **Service-Specific `.env` Files (e.g., `controller/.env`, `mem0/.env`, `n8n.env`):**
+    *   **Purpose:** These files contain variables that are **only** required by that specific service.
+    *   **Location:** They are typically located within the service's subdirectory (e.g., `controller/.env`, `mem0/.env`) or at the root for services without a dedicated subdirectory for their Docker context (e.g., `n8n.env`).
+    *   **Contents:** Examples include internal port numbers the service application listens on (e.g., `CONTROLLER_PORT=5050` in `controller/.env`), specific paths, or flags relevant only to that service.
+    *   **Example for `eko_service_auto`:** It uses `controller/eko.env` for its specific settings like `EKO_LLM_PROVIDER`.
+
+*   **Loading Order in `docker-compose.yml`:**
+    *   For services that use both a root and a service-specific `.env` file, the `docker-compose.yml` is configured to load them in order:
+        1.  `./.env` (root shared variables)
+        2.  `./path/to/service/.env` (service-specific variables)
+    *   This allows service-specific files to potentially override a shared variable if absolutely necessary, though the goal of this strategy is to eliminate such overrides through clear separation.
+
+*   **Special Note on `freq-chat/.env.development.local`:**
+    *   The file `freq-chat/.env.development.local` is managed **separately** as part of the `freq-chat` Next.js application's own development workflow.
+    *   While it's loaded by `docker-compose.yml` for the `freq_chat_auto` service during local Docker-based development, its primary purpose is for `pnpm dev` and Vercel deployments.
+    *   It contains variables specific to `freq-chat`'s frontend and backend needs, including `localhost` URLs for other services (for direct calls during development) and `NEXT_PUBLIC_` variables.
+    *   Ensure any shared API keys (like an OpenRouter key if `freq-chat` calls it directly or via its local proxy) in this file are consistent with the values in the root `auto-stack/.env`.
+
+This hierarchical approach ensures that shared configurations are managed in one place, reducing the risk of conflicts and making the system easier to understand and maintain.
+
 <details>
 <summary>Click to expand Detailed Environment Variable Reference</summary>
 

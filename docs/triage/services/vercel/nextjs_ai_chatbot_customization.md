@@ -2,7 +2,7 @@
 
 **Last updated:** $(Get-Date -Format \\\'yyyy-MM-dd\\\')
 
-This document outlines how the standard [Vercel Next.js AI Chatbot template](https://vercel.com/templates/ai/nextjs-ai-chatbot) might be customized or extended to serve as the `vercel_chat_mcp` service within the `automation-stack`. It provides conceptual examples and areas for adaptation.
+This document outlines how the standard [Vercel Next.js AI Chatbot template](https://vercel.com/templates/ai/nextjs-ai-chatbot) might be customized or extended to serve as the `freq_chat_auto` service within the `automation-stack`. It provides conceptual examples and areas for adaptation.
 
 Refer to `docs/Vercel-integration.md` for the initial recommendation of this template.
 
@@ -24,11 +24,11 @@ Refer to `docs/Vercel-integration.md` for the initial recommendation of this tem
 
 ## 2. Backend API Route Modifications for Stack Integration
 
-The core of customizing the chatbot for the `automation-stack` involves modifying or adding Next.js API routes (typically in the `app/api/` directory) to communicate with `controller_mcp` and `n8n_mcp`.
+The core of customizing the chatbot for the `automation-stack` involves modifying or adding Next.js API routes (typically in the `app/api/` directory) to communicate with `controller_auto` and `n8n_auto`.
 
-### Example: Routing to FastAPI Controller (`controller_mcp`)
+### Example: Routing to FastAPI Controller (`controller_auto`)
 
-Let's say you want a chat command like \"`/freqtrade status`\" to get Freqtrade bot status via the `controller_mcp`.
+Let's say you want a chat command like \"`/freqtrade status`\" to get Freqtrade bot status via the `controller_auto`.
 
 1.  **Define a new API route in your Next.js app (e.g., `app/api/controller-proxy/route.ts`):**
 
@@ -36,7 +36,7 @@ Let's say you want a chat command like \"`/freqtrade status`\" to get Freqtrade 
     // app/api/controller-proxy/route.ts
     import { NextRequest, NextResponse } from 'next/server';
 
-    const CONTROLLER_URL = process.env.FASTAPI_CONTROLLER_URL || 'http://controller_mcp:5050';
+    const CONTROLLER_URL = process.env.CONTROLLER_API_URL || 'http://controller_auto:5050'; // Ensure CONTROLLER_API_URL is set in freq-chat's .env
 
     export async function POST(req: NextRequest) {
       try {
@@ -79,7 +79,7 @@ Let's say you want a chat command like \"`/freqtrade status`\" to get Freqtrade 
 
 2.  **Call this API route from your chat component's frontend logic** when a specific command is detected.
 
-### Example: Triggering n8n Workflows (`n8n_mcp`)
+### Example: Triggering n8n Workflows (`n8n_auto`)
 
 Suppose you want to trigger an n8n workflow to log chat interactions or perform a background task.
 
@@ -89,7 +89,7 @@ Suppose you want to trigger an n8n workflow to log chat interactions or perform 
     // app/api/n8n-trigger/route.ts
     import { NextRequest, NextResponse } from 'next/server';
 
-    const N8N_WEBHOOK_URL = process.env.N8N_CHAT_LOGGING_WEBHOOK_URL; // e.g., http://n8n_mcp:5678/webhook/chat-logger
+    const N8N_WEBHOOK_URL = process.env.N8N_FREQCHAT_WEBHOOK_URL; // e.g., http://n8n_auto:5678/webhook/chat-logger
 
     export async function POST(req: NextRequest) {
       if (!N8N_WEBHOOK_URL) {
@@ -131,7 +131,7 @@ The Next.js AI Chatbot template can be extended to support \"tools\" or \"plugin
 *   **Backend Handler:** When such a command is detected, the frontend sends it to a dedicated API route in the Next.js app.
 *   **API Route Logic:** This API route then:
     1.  Parses the command and parameters.
-    2.  Interacts with the appropriate `automation-stack` service (e.g., calls `controller_mcp` for Freqtrade actions, calls `n8n_mcp` for complex workflows, or directly accesses a data source).
+    2.  Interacts with the appropriate `automation-stack` service (e.g., calls `controller_auto` for Freqtrade actions, calls `n8n_auto` for complex workflows, or directly accesses a data source).
     3.  Returns the result to the frontend, which then displays it or feeds it back into the LLM conversation context.
 
 *   **LLM-Driven Tool Use (Advanced):** If the chosen LLM supports function calling/tool use (like some OpenAI models), you can define available tools (matching stack capabilities) in the LLM API call. The LLM might then respond with a request to call one of your defined tools. Your Next.js backend would then execute this tool (by calling the relevant stack service) and send the result back to the LLM to continue the conversation.
@@ -146,9 +146,9 @@ The standard Next.js AI Chatbot template comes with NextAuth.js for authenticati
 
 *   **Default Setup:** Typically uses providers like GitHub, Google, or email-based magic links.
 *   **Customization for `automation-stack`:**
-    *   **No Auth (Internal Docker):** If `vercel_chat_mcp` is run purely on the internal Docker network and not exposed publicly, authentication might be deemed unnecessary for inter-service calls, simplifying setup. UI access would still be managed by Traefik or direct port exposure.
-    *   **Shared Authentication:** If a unified authentication system is implemented across the `automation-stack` (e.g., using a central IdP), NextAuth.js in `vercel_chat_mcp` could be configured to use a custom OAuth provider or JWT validation strategy to integrate with it.
-    *   **Role-Based Access:** You might extend NextAuth.js to assign roles to users, and then protect certain API routes or plugin actions in `vercel_chat_mcp` based on these roles.
+    *   **No Auth (Internal Docker):** If `freq_chat_auto` is run purely on the internal Docker network and not exposed publicly, authentication might be deemed unnecessary for inter-service calls, simplifying setup. UI access would still be managed by Traefik or direct port exposure.
+    *   **Shared Authentication:** If a unified authentication system is implemented across the `automation-stack` (e.g., using a central IdP), NextAuth.js in `freq_chat_auto` could be configured to use a custom OAuth provider or JWT validation strategy to integrate with it.
+    *   **Role-Based Access:** You might extend NextAuth.js to assign roles to users, and then protect certain API routes or plugin actions in `freq_chat_auto` based on these roles.
         ```typescript
         // Example: Protecting an API route with NextAuth session check
         import { auth } from 'your-auth-config-file'; // From the template
@@ -173,7 +173,7 @@ The Next.js AI Chatbot template provides a solid UI foundation using shadcn/ui a
     *   **Branding:** Update logos, color schemes, and typography to match the `automation-stack` project if desired.
     *   **Custom Components for Tool Responses:** If tools return structured data (e.g., charts from Freqtrade, tables of data), create custom React components to render this data nicely in the chat interface instead of just plain text.
     *   **Command Palette/Suggestions:** Implement UI elements to suggest available `/commands` or tools to the user.
-    *   **Status Indicators:** Add UI elements to show the status of backend services like `controller_mcp` or the LLM provider (e.g., OpenRouter) (could be fetched via a dedicated API route in `vercel_chat_mcp`).
+    *   **Status Indicators:** Add UI elements to show the status of backend services like `controller_auto` or the LLM provider (e.g., OpenRouter) (could be fetched via a dedicated API route in `freq_chat_auto`).
     *   **Integration-Specific UI:** If certain integrations are very common (e.g., initiating a Freqtrade backtest), dedicated UI forms or buttons could be added to simplify these actions beyond just typing commands.
 
 ---

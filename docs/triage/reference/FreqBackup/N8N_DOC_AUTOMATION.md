@@ -1,95 +1,182 @@
-# N8N Documentation Automation Proposal for Auto-Stack
+# Documentation Automation for Auto-Stack
 
-This document outlines a proposed n8n workflow for automating parts of the documentation management process within the `auto-stack` project. It adapts concepts from the legacy `obsidian_service_docs.md` and aligns with the existing documentation structure and guidelines (e.g., `00_MasterSetup.md`, `AutomationChecklist.md`).
+## Overview
+This document outlines a proposed n8n workflow for automating documentation management within the auto-stack ecosystem. The workflow will integrate with the existing agent logging system and provide automated documentation updates based on trading activities and system events.
 
-## 1. Goals
+## Workflow Components
 
-*   Streamline the process of updating and integrating new documentation.
-*   Ensure consistency in documentation structure and linking.
-*   Reduce manual effort in maintaining master documentation files.
-*   Provide a clear audit trail for documentation changes via git.
+### 1. Event Sources
+- Agent logs (Postgres `agent_logs` table)
+- Freqtrade API events
+- System monitoring events
+- Trading performance metrics
 
-## 2. Proposed N8N Workflow: "Docs Sync & Index"
+### 2. Documentation Targets
+- Strategy documentation
+- Performance reports
+- System status updates
+- Error logs and resolutions
+- Configuration changes
 
-This workflow would monitor a specific directory for new or updated markdown files and then process them.
+## n8n Workflow Design
 
-**Trigger:**
-*   **Type:** Filesystem Trigger (or Webhook if preferred for manual triggering via a script/UI).
-*   **Path to Watch:** A designated "drafts" or "staging" subdirectory within `docs/`, e.g., `docs/staging/` or `docs/triage/new_contributions/`.
-*   **Events:** Watch for `create` and `update` events for `*.md` files.
+### 1. Log Processing Node
+```javascript
+// Example node configuration
+{
+  "node": "Postgres",
+  "operation": "Select",
+  "table": "agent_logs",
+  "conditions": {
+    "timestamp": "> {{$now - 1h}}",
+    "status": "!= 'success'"
+  }
+}
+```
 
-**Workflow Steps:**
+### 2. Documentation Generation
+- Create markdown files for:
+  - Daily trading summaries
+  - Strategy performance reports
+  - System health reports
+  - Error resolution guides
 
-1.  **Receive File Event:**
-    *   Get the path and filename of the new/updated markdown file.
+### 3. File Management
+- Organize documentation by:
+  - Date
+  - Strategy
+  - Event type
+  - Severity
 
-2.  **(Optional) Validate/Lint Markdown:**
-    *   **Node:** Execute Command
-    *   **Command:** Run a markdown linter (e.g., `markdownlint-cli`) against the file.
-    *   **Action on Failure:** Log error, send notification, and halt processing for this file.
+## Integration with Agent Logs
 
-3.  **Extract Metadata (Optional but Recommended):**
-    *   **Node:** Code (JavaScript) or HTTP Request (if a microservice for parsing frontmatter exists).
-    *   **Logic:** Parse YAML frontmatter from the markdown file (e.g., `title`, `category`, `tags`, `related_docs`). This metadata can be used for more intelligent processing.
-    *   If no frontmatter, use filename or heuristics to determine category.
+### 1. Log Mapping
+```sql
+-- Example log entry structure
+INSERT INTO agent_logs (
+  agent_name,
+  workflow,
+  action,
+  event_type,
+  message,
+  run_id,
+  status,
+  metadata
+) VALUES (
+  '{{$workflow.id}}',
+  '{{$workflow.id}}',
+  'documentation_update',
+  'strategy_performance',
+  'Strategy performance report generated',
+  '{{$runId}}',
+  'success',
+  '{{$json.metadata}}'
+);
+```
 
-4.  **Determine Target Directory:**
-    *   **Node:** Switch or If
-    *   **Logic:** Based on metadata (e.g., `category`) or file path conventions, determine the correct final subdirectory within `docs/` (e.g., `docs/triage/services/`, `docs/triage/integrations/`).
-    *   **Default:** Move to a general review area if category is unclear.
+### 2. Event Types
+- `strategy_performance`
+- `system_health`
+- `error_resolution`
+- `configuration_change`
+- `trading_summary`
 
-5.  **Move File to Target Directory:**
-    *   **Node:** Move File
-    *   **Action:** Move the processed markdown file from the staging/drafts area to its determined target directory. Overwrite if an older version exists (or implement versioning).
+## Workflow Triggers
 
-6.  **Update Master Index/Documentation Files:**
-    *   This is a critical step and may involve multiple sub-steps or parallel branches.
-    *   **Target Files:**
-        *   `docs/triage/00_MasterSetup.md`
-        *   `docs/triage/AutomationChecklist.md`
-        *   Relevant sub-index files (e.g., `docs/triage/reference/index.md`)
-    *   **Logic for each target file:**
-        *   **Node:** Read File (to get current content of the master doc).
-        *   **Node:** Code (JavaScript) or Set
-            *   **Logic:** Append or insert a link/reference to the new/updated document in the appropriate section. This might involve regex, string manipulation, or marker-based insertion (e.g., `<!-- DOCS_HOOK:services -->`).
-            *   Ensure formatting consistency.
-        *   **Node:** Write File (to save the updated master doc).
+### 1. Scheduled Triggers
+- Daily performance reports
+- Weekly strategy reviews
+- Monthly system health checks
 
-7.  **Git Commit and Push:**
-    *   **Node:** Execute Command
-    *   **Commands:**
-        *   `git add .` (or `git add <specific_file_paths>`)
-        *   `git commit -m "docs: Auto-update - Added/Updated [filename] and relevant indexes"`
-        *   `git push` (ensure credentials/SSH keys are configured for the n8n execution environment)
+### 2. Event-Based Triggers
+- Error occurrences
+- Performance threshold breaches
+- Configuration changes
+- Strategy updates
 
-8.  **Notification:**
-    *   **Node:** (e.g., Email, Discord, Slack, Mattermost - depending on `auto-stack` communication tools)
-    *   **Message:** "Documentation updated: [filename] has been processed and integrated. Relevant indexes updated. Git commit: [commit_hash]."
+## File Organization
 
-## 3. Configuration and Setup
+### 1. Directory Structure
+```
+docs/
+├── strategies/
+│   ├── performance/
+│   ├── configuration/
+│   └── updates/
+├── system/
+│   ├── health/
+│   ├── errors/
+│   └── maintenance/
+└── trading/
+    ├── daily/
+    ├── weekly/
+    └── monthly/
+```
 
-*   **N8N Credentials:**
-    *   Git credentials (SSH key or token).
-    *   Notification service credentials.
-*   **Environment Variables:**
-    *   Paths for staging, target directories.
-    *   Git repository path.
-*   **File Structure Conventions:**
-    *   Define clear conventions for naming files and using frontmatter to aid automated processing.
+### 2. File Naming Convention
+```
+{date}_{type}_{identifier}.md
+Example: 2024-03-20_strategy_performance_kraken_freqai.md
+```
 
-## 4. Considerations & Enhancements
+## Implementation Steps
 
-*   **Error Handling:** Implement robust error handling at each step (e.g., file not found, git command fails, API errors).
-*   **Idempotency:** Design the workflow to be idempotent where possible (e.g., re-running on an already processed file doesn't cause issues).
-*   **Dry Run Mode:** Implement a "dry run" parameter for testing the workflow without making actual file changes or git commits.
-*   **Manual Approval Step:** For critical documentation, an optional manual approval step (e.g., via an email link or a specific n8n node) could be inserted before committing to git.
-*   **Conflict Resolution:** Git conflicts are a potential issue. The workflow should ideally not attempt complex merges. Simpler strategies involve failing on conflict and notifying an admin.
-*   **Integration with `pipe_mcp.md` concepts:** If the `auto-stack` uses an agent for documentation tasks, this n8n workflow could be triggered by the agent or could notify the agent upon completion.
+1. Set up n8n workflow
+2. Configure database connections
+3. Create documentation templates
+4. Set up file management system
+5. Implement error handling
+6. Test workflow triggers
+7. Monitor and optimize
 
-## 5. Alignment with `doc-engineering-guidelines.mdc`
+## Security Considerations
 
-*   **Avoid Duplication:** The workflow helps by centralizing the addition of new docs and updating master files, reducing the chance of manual duplication errors.
-*   **Master File Updates:** Steps are explicitly included to update `MasterSetup.md` and `AutomationChecklist.md`.
-*   **Heading Consistency:** While this workflow doesn't enforce heading consistency *within* a document, it ensures the document is placed and linked correctly. Linting (Step 2) could be extended for this.
+1. Access Control
+   - Implement proper authentication
+   - Use environment variables for credentials
+   - Restrict file access permissions
 
-This proposed n8n workflow provides a starting point for automating documentation management in `auto-stack`. It can be implemented iteratively, starting with core functionality and adding enhancements over time.
+2. Data Protection
+   - Encrypt sensitive information
+   - Implement backup procedures
+   - Regular security audits
+
+## Monitoring and Maintenance
+
+### 1. Workflow Health
+- Monitor workflow execution
+- Track error rates
+- Measure processing times
+- Check file generation success
+
+### 2. Documentation Quality
+- Regular content reviews
+- Update templates as needed
+- Archive old documentation
+- Maintain version history
+
+## Next Steps
+
+1. Review and approve workflow design
+2. Set up n8n instance
+3. Create initial templates
+4. Implement basic workflow
+5. Test with sample data
+6. Deploy to production
+7. Monitor and optimize
+
+## Resources
+
+### Documentation
+- [n8n Documentation](https://docs.n8n.io/)
+- [Postgres Documentation](https://www.postgresql.org/docs/)
+- [Markdown Guide](https://www.markdownguide.org/)
+
+### Tools
+- n8n
+- Postgres
+- Git
+- Markdown editors
+
+## Conclusion
+This automation workflow will help maintain up-to-date documentation while reducing manual effort. By integrating with the existing agent logging system, we can ensure comprehensive coverage of all system activities and trading events.

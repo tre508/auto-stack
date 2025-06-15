@@ -25,7 +25,8 @@ The most common interaction is to ask the `Controller` to execute a command or a
 **Example `curl` command:**
 
 ```bash
-curl -X POST http://localhost:5050/api/v1/execute \
+# Port 5050 should match CONTROLLER_EXTERNAL_PORT from your .env file
+curl -X POST http://localhost:${CONTROLLER_EXTERNAL_PORT:-5050}/api/v1/execute \
 -H "Content-Type: application/json" \
 -d '{
     "task": "Analyze the latest hyperopt results and save a summary to Mem0",
@@ -44,7 +45,8 @@ You can store key-value data directly in `Mem0` for long-term persistence. This 
 **Example `curl` command (direct to Mem0):**
 
 ```bash
-curl -X POST http://localhost:8000/v1/memories \
+# Port 8000 should match MEM0_EXTERNAL_PORT from your .env file
+curl -X POST http://localhost:${MEM0_EXTERNAL_PORT:-8000}/v1/memories \
 -H "Content-Type: application/json" \
 -d '{
     "data": "Closed trade for BTC/USDT. Profit: 2.5%, Duration: 4 hours.",
@@ -86,7 +88,7 @@ The following endpoints on the `Controller` are most relevant for integration.
 #### `POST /api/v1/execute`
 
 -   **Description**: The primary endpoint for all task and command execution. It takes a natural language task description.
--   **URL**: `http://localhost:5050/api/v1/execute`
+-   **URL**: `http://localhost:${CONTROLLER_EXTERNAL_PORT:-5050}/api/v1/execute`
 -   **Payload**:
     ```json
     {
@@ -98,7 +100,7 @@ The following endpoints on the `Controller` are most relevant for integration.
 #### `POST /api/v1/chat/completions`
 
 -   **Description**: For direct, conversational interaction with the AI agent. This is what the `Freq-Chat` UI uses.
--   **URL**: `http://localhost:5050/api/v1/chat/completions`
+-   **URL**: `http://localhost:${CONTROLLER_EXTERNAL_PORT:-5050}/api/v1/chat/completions`
 -   **Payload**:
     ```json
     {
@@ -127,10 +129,10 @@ Your `freqtrade` workspace may need to know the following ports defined in the r
 
 ### B. Service Health Checklist
 
-1.  **Traefik Dashboard**: Open `http://localhost:8080/dashboard/`. You should see green lights for all services (`controller_auto`, `mem0_auto`, etc.).
-2.  **n8n UI**: Navigate to `http://n8n.localhost` (or your configured hostname). You should be able to log in and see your workflows.
-3.  **Controller Health**: Visit `http://localhost:5050/health`. It should return `{"status": "ok"}`.
-4.  **Mem0 Health**: Visit `http://localhost:8000/health`. It should return `{"status": "ok"}`.
+1.  **Traefik Dashboard**: Open `http://localhost:${TRAEFIK_DASHBOARD_PORT:-8080}/dashboard/`. You should see green lights for all services (`controller_auto`, `mem0_auto`, etc.).
+2.  **n8n UI**: Navigate to `http://${N8N_TRAEFIK_HOST:-n8n.localhost}` (usually on port 80 via Traefik). You should be able to log in and see your workflows.
+3.  **Controller Health**: Visit `http://localhost:${CONTROLLER_EXTERNAL_PORT:-5050}/health`. It should return `{"status": "ok"}`.
+4.  **Mem0 Health**: Visit `http://localhost:${MEM0_EXTERNAL_PORT:-8000}/health`. It should return `{"status": "ok"}`.
 
 ## 5. Developer Workflow
 
@@ -140,4 +142,4 @@ Always follow the **Focused Workflow** principle for development:
 2.  Navigate (`cd`) into the specific sub-project you are working on (e.g., `/path/to/auto-stack/freqtrade-user-data`).
 3.  Run `code .` from *within that directory* to launch VS Code.
 
-This ensures that all local tools, extensions, and configurations (like the `.vscode/settings.json` in this workspace) are loaded correctly. 
+This ensures that all local tools, extensions, and configurations (like the `.vscode/settings.json` in this workspace) are loaded correctly.
