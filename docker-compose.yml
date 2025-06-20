@@ -29,20 +29,16 @@ services:
       dockerfile: n8n_auto.Dockerfile
     container_name: n8n_auto
     restart: unless-stopped
+    env_file:
+      - ./.env       # Load shared variables
+      - ./n8n.env    # Load n8n specific variables
     environment:
-      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE:-true}
-      - N8N_HOST=${N8N_HOST:-n8n.localhost} # Use Traefik hostname
-      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://n8n_auto:5678/webhook} # Internal URL
-      - N8N_API_KEY=${N8N_API_KEY}
-      - N8N_LICENSE_KEY=${N8N_LICENSE_KEY} # Optional
-      - DB_TYPE=sqlite
-      - DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
-      - N8N_SECURE_COOKIE=false # Review for production
-      - N8N_ALLOW_EXEC=true # If Execute Command node is used
-      - N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true # For community nodes
-      - NODE_FUNCTION_ALLOW_EXTERNAL=true # For Function node if it needs external modules
-      - NODE_ENV=production
-      - GENERIC_TIMEZONE=${TZ:-Europe/Berlin} # For consistent timezone
+      # Variables from .env and n8n.env will be loaded.
+      # Explicit environment settings here can override them or provide defaults if not in env_files.
+      # N8N_HOST, N8N_PORT, DB_TYPE etc. are now in n8n.env
+      # N8N_API_KEY, N8N_LICENSE_KEY, N8N_BASIC_AUTH_ACTIVE etc. are in .env
+      # GENERIC_TIMEZONE is in n8n.env (takes from TZ in root .env)
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL} # Ensure this is picked up from root .env
     volumes:
       - /d/docker-volumes/n8n_data:/home/node/.n8n # Standard n8n data
       - /d/docker-volumes/n8n_host_vault:/host_vault # For Doc_Mirror_Update.json
@@ -93,8 +89,8 @@ services:
     container_name: controller_auto
     restart: unless-stopped
     env_file:
-      - .env # Global .env
-      - ./controller/.env # Service specific .env
+      - ./.env # Load shared variables from the root .env first
+      - ./controller/.env # Then load service-specific variables
     environment:
       # EKO_SERVICE_URL, MEM0_API_URL, etc. are loaded from .env files.
       # The controller needs to know the internal service names.
@@ -124,10 +120,9 @@ services:
     container_name: eko_service_auto
     restart: unless-stopped
     env_file:
-      - .env # Global .env for keys like ANTHROPIC_API_KEY, OPENAI_API_KEY (which is OpenRouter key)
-      - ./controller/.env # For EKO_LLM_PROVIDER, EKO_MODEL_NAME
-    environment:
-      - EKO_SERVICE_PORT=3001 # App inside listens on 3001
+      - ./.env # Load shared variables
+      - ./controller/eko.env # Load Eko specific variables
+    # environment: # Removed as all variables are in env_files
     # ports: # Usually not needed if only controller accesses it internally
     #   - "${EKO_EXTERNAL_PORT:-3002}:3001"
     networks:
@@ -138,8 +133,8 @@ services:
     container_name: openrouter_proxy_auto
     restart: unless-stopped
     env_file:
-      - .env # For OPENROUTER_API_KEY
-      - ./openrouter_proxy/.env # For specific proxy settings
+      - ./.env # Load shared variables
+      - ./openrouter_proxy/.env # Load OpenRouter Proxy specific variables
     ports:
       - "${OPENROUTER_PROXY_EXTERNAL_PORT:-8001}:8000" # Internal port is 8000 (from its .env)
     networks:
@@ -171,15 +166,16 @@ services:
     container_name: mem0_auto
     restart: unless-stopped
     env_file:
-      - .env # For HF_TOKEN (as OPENAI_API_KEY for controller proxy)
-      - ./mem0/.env # For other mem0 specific settings (MEM0_HOST, MEM0_PORT, QDRANT_HOST etc.)
+      - ./.env # Load shared variables (like HF_TOKEN)
+      - ./mem0/.env # Load Mem0 specific variables (MEM0_HOST, MEM0_PORT, QDRANT_HOST etc.)
     environment:
-      # MEM0_CONFIG_PATH=/app/config.yaml (already in its .env)
-      # PORT=8000 (from its .env, used by uvicorn in its Dockerfile)
-      # OPENAI_API_KEY will be HF_TOKEN via ./mem0/.env which gets it from root .env's HF_TOKEN
-      # OPENAI_BASE_URL points to controller proxy via ./mem0/.env
-      - QDRANT_HOST=qdrant_auto # Ensure this overrides any value in mem0/.env if it's not already qdrant_auto
-      - QDRANT_PORT=6333
+      # MEM0_CONFIG_PATH=/app/config.yaml (can be in mem0/.env or here)
+      # PORT (internal, e.g. 8000) is in mem0/.env
+      # OPENAI_API_KEY (which is HF_TOKEN) is in root .env
+      # OPENAI_BASE_URL should be set here or in mem0/.env to point to the correct embedder proxy
+      - OPENAI_BASE_URL=http://controller_auto:5050/mem0_openai_proxy/v1 # Example, ensure correct
+      - QDRANT_HOST=qdrant_auto # This is also in mem0/.env, ensure consistency
+      - QDRANT_PORT=6333      # This is also in mem0/.env, ensure consistency
     ports:
       - "${MEM0_EXTERNAL_PORT:-8000}:8000" # Internal port is 8000 (from its .env)
     volumes:
@@ -199,12 +195,11 @@ services:
     image: postgres:15 # Or specific version like postgres:15-alpine
     container_name: postgres_logging_auto
     restart: unless-stopped
+    env_file:
+      - ./.env # Loads POSTGRES_LOGGING_USER, POSTGRES_LOGGING_PASSWORD, POSTGRES_LOGGING_DB
     ports:
-      - "${POSTGRES_LOGGING_PORT:-5432}:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_LOGGING_USER:-autostack_logger}
-      POSTGRES_PASSWORD: ${POSTGRES_LOGGING_PASSWORD:-yoursecurepassword_logger}
-      POSTGRES_DB: ${POSTGRES_LOGGING_DB:-autostack_logs}
+      - "${POSTGRES_LOGGING_EXTERNAL_PORT:-5432}:5432" # Uses renamed var from root .env
+    # environment: # Removed as all variables are in env_file
     volumes:
       - /d/docker-volumes/pg_logs_data:/var/lib/postgresql/data # Mapped to default PGDATA
     networks:

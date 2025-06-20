@@ -17,11 +17,11 @@ Proxy is an optional service component that handles API routing, authentication,
 
 ### Service Implementations
 
-#### OpenRouter Proxy (`openrouter_proxy_mcp`)
+#### OpenRouter Proxy (`openrouter_proxy_auto`)
 - **Purpose**: Provides unified interface to OpenRouter.ai's model marketplace
 - **Location**: `openrouter_proxy/` directory
 - **Technology**: Node.js/Express.js service
-- **Port**: Configurable (typically 3001)
+- **Port**: Configurable (internally 8000, as per `openrouter_proxy/.env` and `docker-compose.yml`)
 
 ## Configuration Requirements
 
@@ -32,10 +32,10 @@ Proxy is an optional service component that handles API routing, authentication,
 - **`ALLOWED_ORIGINS`**: CORS configuration for allowed origins
 
 ### Docker Configuration
-- **Service Name**: `openrouter_proxy_mcp`
+- **Service Name**: `openrouter_proxy_auto`
 - **Build Context**: `./openrouter_proxy` directory
-- **Network**: `mcp-net` for internal service communication
-- **Port Mapping**: Maps internal port to configurable host port
+- **Network**: `auto-stack-net` for internal service communication
+- **Port Mapping**: Maps internal port (8000) to configurable host port (e.g., `${OPENROUTER_PROXY_EXTERNAL_PORT}`)
 
 ### Dependencies
 - **Express.js**: Web framework for proxy service
@@ -71,7 +71,7 @@ Proxy is an optional service component that handles API routing, authentication,
 
 ### Health Checks
 - **Proxy Status**: `GET /health` or `/status` endpoint
-- **Service Logs**: `docker logs openrouter_proxy_mcp`
+- **Service Logs**: `docker logs openrouter_proxy_auto`
 - **API Connectivity**: Test external API access through proxy
 
 ### Integration Testing

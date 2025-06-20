@@ -3,9 +3,9 @@
 ## Phase 4: `freq-chat` & Mem0 Integration (In Progress)
 
 - **[IN PROGRESS]** 🚀 **Documentation & Configuration Cleanup**:
-  - **[IN PROGRESS]** Standardize all service names in `docker-compose.yml` and documentation to use the `_auto` suffix (e.g., `n8n_auto`, `mem0_auto`).
-  - **[IN PROGRESS]** Rename the main Docker Compose file from `compose-mcp.yml` to `docker-compose.yml` and update all references.
-  - **[IN PROGRESS]** Consolidate and update all documentation (`00` through `06`, `README_agent.md`, etc.) to be consistent with the latest architecture (`freq-chat`, self-hosted Mem0, controller proxy, unified logging).
+  - **[DONE]** Standardize all service names in `docker-compose.yml` and documentation to use the `_auto` suffix (e.g., `n8n_auto`, `mem0_auto`). (Most key files updated, ongoing review for minor instances).
+  - **[DONE]** Main Docker Compose file is now `docker-compose.yml`. **[IN PROGRESS]** Updating all documentation references.
+  - **[IN PROGRESS]** Consolidate and update all documentation (`00_MasterSetup.md`, service guides, etc.) to be consistent with the latest architecture (`freq-chat`, self-hosted Mem0, controller proxy, unified logging, new .env strategy).
   - **[TODO]** Create a centralized `API_Contracts.md` document to formally define the endpoints, request/response schemas, and authentication methods for `controller_auto`, `mem0_auto`, `openrouter_proxy_auto`, and key n8n webhooks.
 
 ## Phase 5: Advanced Integration & Trading Features

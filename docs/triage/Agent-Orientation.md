@@ -20,19 +20,19 @@ This application is built with Next.js, deployed on Vercel, and its source code 
 1.  **Unified LLM Access:**
     *   `freq-chat` routes requests to the appropriate LLM provider based on configuration and potentially user specification.
     *   **Supported Backends for LLM Tasks:**
-        *   **OpenRouter:** Via the `openrouter_proxy_mcp` service for a wide selection of models. `freq-chat` can be configured to use this as its primary LLM endpoint.
+        *   **OpenRouter:** Via the `openrouter_proxy_auto` service for a wide selection of models. `freq-chat` can be configured to use this as its primary LLM endpoint.
         *   **Direct to Model Providers:** `freq-chat` can be configured with API keys (e.g., `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` stored as Vercel environment variables) to call providers like OpenAI, Anthropic, etc., directly.
-        *   **Local Models via Ollama:** If an `ollama_mcp` service is running and integrated, `freq-chat` can potentially route requests to local models.
+        *   **Local Models via Ollama:** If an `ollama_auto` service (if planned with this naming) is running and integrated, `freq-chat` can potentially route requests to local models.
 
 2.  **Chat-Driven Workflow Orchestration:**
     *   Users can initiate complex automation tasks by issuing commands or queries within `freq-chat`.
     *   **Vercel-Hosted API Routes:** The `freq-chat` backend (Next.js API routes) translates these chat commands into actions. These API routes are the integration points for backend services.
     *   **n8n Integration:** `freq-chat` API routes can trigger n8n workflows via webhooks. This is the primary mechanism for automating multi-step processes, data manipulation, and scheduled tasks.
         *   *Example:* A user types "Summarize today's trades." `freq-chat` calls an API route, which triggers an n8n workflow. The workflow queries Freqtrade (via the controller), gets data, uses an LLM (via OpenRouter proxy) to summarize, and then posts the result back to `freq-chat` or stores it in Mem0 for display.
-    *   **FastAPI Controller (`controller_mcp`) Integration:** `freq-chat` API routes can call endpoints on the `controller_mcp` to perform specific actions like workspace operations, privileged Freqtrade interactions, or other custom tasks not suited for an n8n workflow.
+    *   **FastAPI Controller (`controller_auto`) Integration:** `freq-chat` API routes can call endpoints on the `controller_auto` to perform specific actions like workspace operations, privileged Freqtrade interactions, or other custom tasks not suited for an n8n workflow.
 
 3.  **Mem0 for Conversational Memory & Knowledge:**
-    *   `freq-chat` integrates deeply with the **Mem0 (`mem0`) service** to:
+    *   `freq-chat` integrates deeply with the **Mem0 (`mem0_auto`) service** to:
         *   Persist conversation history.
         *   Store and retrieve user preferences and context.
         *   Enable Retrieval Augmented Generation (RAG) by fetching relevant information from Mem0's knowledge base to provide more informed and accurate responses.
@@ -49,7 +49,7 @@ This application is built with Next.js, deployed on Vercel, and its source code 
 
 ## Mem0: Memory & Knowledge Store Service
 
-Mem0 (service: `mem0_mcp`) is a critical component of the automation-stack that provides persistent memory for AI agents and knowledge management capabilities. **It is now installed and runs locally within the `automation-stack` workspace at `mem0/server/` and is exposed via the `mem0_mcp` Docker service.** It integrates with multiple services to enhance reasoning, context retention, and information retrieval.
+Mem0 (service: `mem0_auto`) is a critical component of the automation-stack that provides persistent memory for AI agents and knowledge management capabilities. **It is now installed and runs locally within the `automation-stack` workspace at `mem0/server/` and is exposed via the `mem0_auto` Docker service.** It integrates with multiple services to enhance reasoning, context retention, and information retrieval.
 
 ### Purpose & Architecture
 - **Centralized Memory Store:** Mem0 serves as a unified, persistent memory system for all agents and workflows.
@@ -59,18 +59,18 @@ Mem0 (service: `mem0_mcp`) is a critical component of the automation-stack that 
 
 ### Required Dependencies & Setup
 - **Core Dependencies:** Docker, Docker Compose. The Mem0 service itself runs in a Python 3.10 container.
-- **Vector Database:** Qdrant (run as a Docker service).
-- **LLM & Embeddings:** Configured to use an OpenRouter proxy (e.g., `openrouter_proxy_mcp`) via an OpenAI-compatible API.
+- **Vector Database:** Qdrant (run as a Docker service, `qdrant_auto`).
+- **LLM & Embeddings:** Configured to use an OpenRouter proxy (e.g., `openrouter_proxy_auto`) via an OpenAI-compatible API.
 - **Setup Process:** Follow the comprehensive guide in `docs/guides/mem0_server_guide.md` for detailed setup, Docker configurations for Mem0 and Qdrant, `config.yaml` settings for OpenRouter proxy usage, and PostgreSQL for unified logging.
 
 ### Integration Points
-- **Controller (`controller_mcp`):** Interacts with the self-hosted Mem0 service's REST API (e.g., `http://mem0_mcp:8000`). Requires an HTTP client like `httpx`.
-- **n8n (`n8n_mcp`):** Interacts via Mem0's REST API using HTTP Request nodes (e.g., `http://mem0_mcp:8000`).
-- **Vercel AI Chat (`freq-chat`):** Backend API routes interact with Mem0's REST API (e.g., `http://mem0_mcp:8000` or its publicly exposed URL) for conversational memory and RAG.
-- **Cursor:** Direct integration with the self-hosted Mem0 REST API as an MCP server is not out-of-the-box. The `mem0-mcp` repository provides a separate server for Cursor that connects to the Mem0 Cloud Platform. To use with a self-hosted Mem0, this `mem0-mcp` server would need adaptation, or a new MCP wrapper would be required.
-- **Environment Configuration:** Requires specific environment variables for the Mem0 service (e.g., `OPENAI_API_KEY` and `OPENAI_BASE_URL` for the OpenRouter proxy, `MEM0_CONFIG_PATH`) and volume mapping in `.env` and `compose-mcp.yml`.
+- **Controller (`controller_auto`):** Interacts with the self-hosted Mem0 service's REST API (e.g., `http://mem0_auto:8000`). Requires an HTTP client like `httpx`.
+- **n8n (`n8n_auto`):** Interacts via Mem0's REST API using HTTP Request nodes (e.g., `http://mem0_auto:8000`).
+- **Vercel AI Chat (`freq-chat`):** Backend API routes interact with Mem0's REST API (e.g., `http://mem0_auto:8000` or its publicly exposed URL) for conversational memory and RAG.
+- **Cursor:** Direct integration with the self-hosted Mem0 REST API as an MCP server is not out-of-the-box. The `mem0-mcp` repository (if this refers to an old component) provides a separate server for Cursor that connects to the Mem0 Cloud Platform. To use with a self-hosted Mem0, this server would need adaptation, or a new MCP wrapper would be required.
+- **Environment Configuration:** Requires specific environment variables for the Mem0 service (e.g., `OPENAI_API_KEY` which is `HF_TOKEN`, and `OPENAI_BASE_URL` for the OpenRouter proxy or embedder proxy, `MEM0_CONFIG_PATH`) and volume mapping in `.env` and `docker-compose.yml`.
 - **Configuration File:** `mem0/server/config.yaml` defines vector store (Qdrant), LLM provider (OpenAI-compatible for OpenRouter), embedder, and other settings for the self-hosted server.
-- **Unified Logging:** A separate PostgreSQL service (`postgres_logging_mcp`) is used for unified logging, including logs from n8n workflows that interact with Mem0.
+- **Unified Logging:** A separate PostgreSQL service (`postgres_logging_auto`) is used for unified logging, including logs from n8n workflows that interact with Mem0.
 
 ## Core Task: Executing User Requests
 
@@ -93,8 +93,8 @@ Please follow this general process when undertaking tasks:
     *   Consult primary planning documents like `docs/TODO.md` or `docs/setup/MasterGameplan.md` if referenced.
     *   Identify specific goals and deliverables for the task.
 2.  **Gather Context & Information**: 
-    *   Review relevant current documentation, especially the guides in `docs/setup/` and `README_agent.md`.
-    *   Examine pertinent code (e.g., `compose-mcp.yml`, `controller/controller.py`, Freqtrade strategies) or configuration files.
+    *   Review relevant current documentation, especially the guides in `docs/triage/` (like `00_MasterSetup.md`) and `README_agent.md`.
+    *   Examine pertinent code (e.g., `docker-compose.yml`, `controller/controller.py`, Freqtrade strategies) or configuration files.
     *   If necessary, use tools to list directory contents or read specific files for more detail.
 3.  **Propose Plan / Intended Action**: 
     *   For complex requests, briefly outline the steps you intend to take.
@@ -107,8 +107,8 @@ Please follow this general process when undertaking tasks:
     *   Clearly report the results, including any relevant output, logs, or error messages if issues were encountered.
 6.  **Targeted Documentation Updates (Post-Task Completion)**:
     *   **Crucially, only update documentation *after* a task is successfully completed and verified.**
-    *   Identify the *specific, most relevant* document(s) that need updating to reflect the change (e.g., `AutomationChecklist.md` for a verified item, a specific setup guide in `docs/setup/` if a configuration changes, or `README_agent.md` if core agent interaction patterns are altered).
-    *   Propose concise, targeted edits to these documents using the `edit_file` tool. Clearly state the reason for the update, linking it back to the completed task.
+    *   Identify the *specific, most relevant* document(s) that need updating to reflect the change (e.g., `docs/triage/AutomationChecklist.md` for a verified item, a specific setup guide in `docs/triage/` if a configuration changes, or `README_agent.md` if core agent interaction patterns are altered).
+    *   Propose concise, targeted edits to these documents using the `replace_in_file` tool. Clearly state the reason for the update, linking it back to the completed task.
     *   Avoid broad, speculative, or premature documentation changes.
 7.  **Log Key Observations/Decisions (MCP Servers)**:
     *   For significant findings, decisions made during a task, or before proposing large code changes or concluding complex multi-step operations, use MCP server tools (`add_observations`, `create_entities`, etc.) to log this information for persistence and context.
@@ -119,11 +119,11 @@ To operate effectively, maintain familiarity with:
 
 1.  **This Document (`Agent-Orientation.md`)**: Your primary operational guide, emphasizing `freq-chat`.
 2.  **`docs/README_agent.md`**: Core onboarding information, updated for `freq-chat`.
-3.  **The `docs/setup/` directory**: Detailed guides, including `03_Core_Services_Configuration_and_Verification.md` and `04_Cross_Stack_Integration_Guide.md` which detail `freq-chat` and its integrations.
-4.  **`docs/TODO.md`**: Current tasks, including `freq-chat` specific items.
-5.  **`docs/setup/MasterGameplan.md`**: Higher-level project goals.
-6.  **`AutomationChecklist.md`**: For verifying system components, including `freq-chat` functionality.
-7.  **`docker-compose.yml`**: Defines services in the `automation-stack`.
+3.  **The `docs/triage/` directory (especially `00_MasterSetup.md` and other guides)**: Detailed guides, including `03_Core_Services_Configuration_and_Verification.md` and `04_Cross_Stack_Integration_Guide.md` which detail `freq-chat` and its integrations.
+4.  **`docs/triage/TODO.md`**: Current tasks, including `freq-chat` specific items.
+5.  **`docs/triage/reference/guides/MasterGameplan.md`**: Higher-level project goals.
+6.  **`docs/triage/AutomationChecklist.md`**: For verifying system components, including `freq-chat` functionality.
+7.  **`docker-compose.yml`**: Defines services in the `auto-stack`.
 8.  **`controller/controller.py`**: FastAPI controller code.
 9.  **`freq-chat/` directory:** Source code for the Next.js AI Chatbot, including its API routes (`pages/api/` or `app/api/`) which are key integration points.
 10. **`docs/Vercel-integration.md`**: Details on Vercel deployment, environment variables, and API patterns relevant to `freq-chat`.
@@ -153,7 +153,7 @@ The `edit_file` tool has shown limitations when attempting to apply **large-scal
 
 This `automation-stack` project has undergone a significant rebuild. The primary goal has been to establish a foundational Docker-based environment for Traefik, n8n, Ollama, and a FastAPI `controller.py`, designed to integrate with a `freqtrade` dev container environment.
 
-**Current documentation efforts should focus on refining guides in `docs/setup/`, and maintaining `README_agent.md` and `AutomationChecklist.md` as primary live operational documents.**
+**Current documentation efforts should focus on refining guides in `docs/triage/`, and maintaining `README_agent.md` and `docs/triage/AutomationChecklist.md` as primary live operational documents.**
 
 ## 📜 Legacy Documentation Artifacts
 
@@ -169,12 +169,12 @@ Specifically, you may find references to:
 
 ## ⚠️ Guidance for Agents and Contributors
 
-1.  **Prioritize Current Code & Configuration:** The primary source of truth is the actual current codebase and main configuration files (`compose-mcp.yml`, `controller/controller.py`, `.env`, Freqtrade's devcontainer files).
-2.  **Prioritize Current Documentation:** Focus on and trust information in `Agent-Orientation.md` (this file), `README_agent.md`, `AutomationChecklist.md`, and the guides within the `docs/setup/` directory.
-3.  **Review Legacy Docs With Extreme Caution:** If you must consult any document outside the ones listed above (e.g., from `docs/depreciated/` or `DocsUpdateHistory.md`), assume its content is outdated unless verified against the current codebase and newer documentation.
+1.  **Prioritize Current Code & Configuration:** The primary source of truth is the actual current codebase and main configuration files (`docker-compose.yml`, `controller/controller.py`, `.env` files, Freqtrade's devcontainer files).
+2.  **Prioritize Current Documentation:** Focus on and trust information in `Agent-Orientation.md` (this file), `README_agent.md`, `docs/triage/AutomationChecklist.md`, and the guides within the `docs/triage/` directory (especially `00_MasterSetup.md`).
+3.  **Review Legacy Docs With Extreme Caution:** If you must consult any document outside the ones listed above (e.g., from `docs/depreciated/` or `docs/triage/reference/docs-update-history.md`), assume its content is outdated unless verified against the current codebase and newer documentation.
 4.  **Mark Outdated Sections (If Found in *Current* Docs):** If, while working on supposedly current documents, you identify specific outdated sections, please clearly propose an edit to mark or fix them.
-5.  **Focus on Current Objectives:** Refer to user prompts, `docs/TODO.md`, and `docs/setup/MasterGameplan.md` for the actual goals of current tasks.
-6.  **Incremental Updates to Core Docs:** As new features are implemented or system configurations change, ensure `README_agent.md`, `AutomationChecklist.md`, and relevant `docs/setup/` guides are updated in a targeted manner.
+5.  **Focus on Current Objectives:** Refer to user prompts, `docs/triage/TODO.md`, and `docs/triage/reference/guides/MasterGameplan.md` for the actual goals of current tasks.
+6.  **Incremental Updates to Core Docs:** As new features are implemented or system configurations change, ensure `README_agent.md`, `docs/triage/AutomationChecklist.md`, and relevant `docs/triage/` guides are updated in a targeted manner.
 
 **Your primary directive when referencing any documentation is to validate information against the live project state and current core documents before taking action based on potentially obsolete instructions.**
 

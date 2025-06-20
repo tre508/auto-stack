@@ -1,108 +1,161 @@
-# Plan B Strategy Guide: FreqAI Development
+# Plan B Strategy Guide for Auto-Stack Integration
 
-## 1. Introduction & Core Philosophy
+## Overview
+This guide consolidates the lessons learned from our previous RL experimentation and outlines a robust, data-driven approach for developing trading strategies within the auto-stack ecosystem. The focus is on building reliable, maintainable strategies that leverage proven technical indicators and machine learning techniques.
 
-This document outlines the "Plan B" approach to developing a FreqAI trading strategy, moving away from pure Reinforcement Learning (RL) experimentation towards a more structured, data-driven methodology. The lessons learned from the "RagsToRichesRLModel" project emphasize the need for robust foundations, proven indicators, and rigorous backtesting.
+## Core Principles
 
-**Core Philosophy:**
-*   **Data-Driven Decisions:** Rely on historical data and statistical analysis rather than speculative RL.
-*   **Proven Indicators:** Leverage well-understood technical indicators as the primary source for feature engineering.
-*   **Risk Management:** Implement comprehensive risk management techniques (stop-loss, ROI targets).
-*   **Iterative Improvement:** Focus on incremental improvements through hyperparameter optimization and feature selection.
-*   **Simplicity and Robustness:** Favor simpler models and strategies that are less prone to overfitting and perform consistently across different market conditions.
+### 1. Data-Driven Development
+- Start with extensive backtesting using historical data
+- Use FreqAI's built-in data processing capabilities
+- Implement proper train/test splits (80/20 recommended)
+- Validate strategy performance across multiple market conditions
 
-## 2. Key Lessons Learned from RL (RagsToRiches)
+### 2. Risk Management
+- Implement strict stop-loss mechanisms
+- Use position sizing based on volatility
+- Maintain a maximum of 5 open trades
+- Set conservative profit targets
+- Use trailing stops for trend following
 
-The attempt to build a purely RL-driven model highlighted several challenges:
-*   **Complexity:** RL models can be complex to design, train, and debug.
-*   **Data Requirements:** Effective RL often requires vast amounts of diverse data.
-*   **Stability:** RL agents can exhibit unstable behavior, especially in dynamic market environments.
-*   **Interpretability:** Understanding *why* an RL agent makes a particular decision can be difficult.
-*   **Overfitting:** RL models can easily overfit to specific training data or market regimes.
+### 3. Technical Indicators
+Primary indicators to consider:
+- RSI (Relative Strength Index)
+- MACD (Moving Average Convergence Divergence)
+- Bollinger Bands
+- Volume indicators
+- Support/Resistance levels
 
-While RL holds promise, "Plan B" prioritizes a more conventional machine learning approach for FreqAI until RL techniques for trading mature further or specific, well-defined use cases emerge.
+### 4. Machine Learning Integration
+- Use FreqAI's feature engineering capabilities
+- Focus on supervised learning approaches
+- Implement proper cross-validation
+- Monitor for overfitting
+- Use ensemble methods when appropriate
 
-## 3. "Plan B" Strategy Development Framework
+## Implementation Steps
 
-### 3.1. Foundation: Solid Technical Analysis
+### 1. Environment Setup
+```bash
+# Required environment variables
+FREQTRADE_API_USERNAME=your_api_user
+FREQTRADE_API_PASSWORD=a_very_secure_password
+KRAKEN_API_KEY=your_kraken_key
+KRAKEN_API_SECRET=your_kraken_secret
+API_JWT_SECRET=your_jwt_secret
+API_WS_TOKEN=your_ws_token
+```
 
-*   **Indicator Selection:**
-    *   Start with a core set of widely used and effective indicators (e.g., RSI, MACD, Bollinger Bands, EMA, SMA, ADX, StochRSI).
-    *   Research and select indicators relevant to the chosen market and timeframe.
-    *   Avoid an excessive number of indicators initially to prevent noise and multicollinearity.
-*   **Timeframes:**
-    *   Utilize multiple timeframes (e.g., 5m, 15m, 1h, 4h) to capture short-term, medium-term, and long-term trends.
-    *   Ensure consistency in how timeframes are used for feature generation.
+### 2. Strategy Development Workflow
+1. Start with a basic strategy template
+2. Add technical indicators
+3. Implement entry/exit logic
+4. Backtest thoroughly
+5. Optimize parameters
+6. Deploy to paper trading
+7. Monitor performance
+8. Iterate based on results
 
-### 3.2. Feature Engineering
+### 3. FreqAI Model Development
+1. Create a new model class extending `IFreqaiModel`
+2. Implement feature engineering
+3. Define training parameters
+4. Set up prediction logic
+5. Implement proper data preprocessing
 
-*   **Lagged Features:** Incorporate lagged values of indicators and price data to provide historical context.
-*   **Transformations:** Apply transformations (e.g., normalization, standardization, differencing) as appropriate for the chosen model.
-*   **Interaction Features:** Consider creating interaction features (e.g., RSI > 70 AND MACD_cross_bullish) if domain knowledge suggests their utility.
-*   **Target Definition (`&label`):**
-    *   Clearly define the prediction target (e.g., price will increase by X% in Y periods).
-    *   Experiment with different `label_period_candles` and profit/loss thresholds.
+### 4. Integration with Auto-Stack
+1. Ensure API server is enabled in config
+2. Set up proper authentication
+3. Configure logging to work with agent_logs
+4. Implement proper error handling
+5. Set up monitoring and alerts
 
-### 3.3. Model Selection & Training
+## Best Practices
 
-*   **Start Simple:** Begin with simpler, interpretable models (e.g., Logistic Regression, LightGBM, XGBoost, RandomForest).
-*   **Hyperparameter Optimization:**
-    *   Use Freqtrade's built-in hyperopt capabilities or external tools (e.g., Optuna) to find optimal model parameters.
-    *   Define a clear search space and evaluation metric for optimization.
-*   **Data Splitting:**
-    *   Use appropriate train/validation/test splits to evaluate model performance and prevent overfitting.
-    *   Consider time-series cross-validation techniques.
-*   **Regularization:** Apply regularization techniques (L1, L2, dropout) if using models prone to overfitting.
+### Code Organization
+- Keep strategies modular and well-documented
+- Use consistent naming conventions
+- Implement proper error handling
+- Add comprehensive logging
+- Write unit tests for critical components
 
-### 3.4. Backtesting & Evaluation
+### Performance Monitoring
+- Track key metrics:
+  - Win rate
+  - Profit factor
+  - Maximum drawdown
+  - Sharpe ratio
+  - Risk-adjusted returns
+- Set up automated alerts for:
+  - Unusual losses
+  - System errors
+  - Performance degradation
 
-*   **Rigorous Backtesting:**
-    *   Backtest over extended and diverse market periods (bull, bear, sideways).
-    *   Pay attention to metrics like Sharpe Ratio, Sortino Ratio, Max Drawdown, Profit Factor, and win/loss rate.
-*   **Out-of-Sample Testing:** Ensure the model generalizes well to unseen data.
-*   **Walk-Forward Optimization:** Consider walk-forward optimization for more robust parameter tuning.
-*   **Analyze Trades:** Review individual trades made by the bot during backtesting to understand its behavior and identify potential flaws.
+### Security
+- Never hardcode credentials
+- Use environment variables
+- Implement proper API authentication
+- Regular security audits
+- Monitor for suspicious activity
 
-### 3.5. Risk Management (Freqtrade Configuration)
+## Troubleshooting Guide
 
-*   **Stop-Loss:**
-    *   Implement a sensible stop-loss strategy (e.g., fixed percentage, trailing stop-loss).
-    *   Optimize stop-loss values using hyperopt.
-*   **Take Profit / ROI Table:**
-    *   Define a realistic ROI table.
-    *   Consider dynamic take-profit mechanisms if appropriate.
-*   **Position Sizing:**
-    *   Use a consistent and appropriate stake amount.
-    *   Consider dynamic position sizing based on risk or confidence (advanced).
-*   **Max Open Trades:** Limit the number of concurrent trades to manage overall risk exposure.
+### Common Issues
+1. API Connection Problems
+   - Check credentials
+   - Verify network connectivity
+   - Check API rate limits
 
-## 4. Integration with `auto-stack`
+2. Strategy Performance Issues
+   - Review backtest results
+   - Check for overfitting
+   - Verify indicator calculations
+   - Monitor market conditions
 
-*   **Configuration (`config-planB.json`):**
-    *   Ensure the API server is enabled and configured correctly for communication with the `auto-stack` Controller.
-    *   Use environment variables for sensitive credentials.
-    *   Set `freqai.identifier` to match the FreqAI model class name you develop (e.g., `PlanB_FreqAI_Identifier`).
-*   **Strategy File:**
-    *   Create a new Python strategy file in `freqtrade/user_data/strategies/`.
-    *   The strategy class name should match the `freqai.identifier`.
-    *   Implement `populate_indicators`, `populate_entry_trend`, and `populate_exit_trend` as placeholders if the FreqAI model handles all logic, or to add pre/post-processing filters.
-*   **FreqAI Model File:**
-    *   Create a new Python FreqAI model file in `freqtrade/user_data/freqaimodels/`.
-    *   The model class name must match `freqai.identifier`.
-    *   Implement the FreqAI interface methods (`def_features`, `train`, `predict`, etc.).
+3. FreqAI Model Issues
+   - Check data quality
+   - Verify feature engineering
+   - Monitor model performance
+   - Check for memory leaks
 
-## 5. Iteration and Continuous Improvement
+## Next Steps
 
-*   **Regular Retraining:** Schedule regular retraining of the model to adapt to changing market conditions.
-*   **Performance Monitoring:** Continuously monitor the live performance of the strategy.
-*   **A/B Testing:** If possible, A/B test different versions of the strategy or model.
-*   **Documentation:** Keep detailed records of experiments, model versions, and performance metrics.
+1. Review and adapt existing strategies from `strategies - Copy`
+2. Evaluate and update models from `models - Copy`
+3. Set up proper logging and monitoring
+4. Implement automated testing
+5. Create deployment pipeline
 
-## 6. Resources & Best Practices (from `planB.md`)
+## Resources
 
-*   **Study Existing Strategies:** Analyze successful open-source Freqtrade strategies.
-*   **Freqtrade Documentation:** Refer to the official Freqtrade documentation for FreqAI, hyperopt, and general bot configuration.
-*   **Machine Learning Resources:** Consult reliable machine learning resources for best practices in feature engineering, model selection, and evaluation.
-*   **Community:** Engage with the Freqtrade community for insights and support.
+### Documentation
+- [Freqtrade Documentation](https://www.freqtrade.io/en/latest/)
+- [FreqAI Documentation](https://www.freqtrade.io/en/latest/freqai/)
+- [Kraken API Documentation](https://www.kraken.com/features/api)
 
-This guide provides a roadmap for developing a robust and potentially profitable FreqAI strategy under the "Plan B" framework. Success will depend on careful implementation, rigorous testing, and continuous adaptation.
+### Tools
+- Freqtrade CLI
+- FreqAI
+- Backtesting tools
+- Performance analysis tools
+
+## Maintenance
+
+### Regular Tasks
+1. Monitor strategy performance
+2. Update technical indicators
+3. Retrain models as needed
+4. Review and update risk parameters
+5. Check system logs
+6. Update dependencies
+
+### Emergency Procedures
+1. Stop trading if necessary
+2. Review recent trades
+3. Check system logs
+4. Verify market conditions
+5. Implement fixes
+6. Resume trading when safe
+
+## Conclusion
+This guide provides a framework for developing and maintaining trading strategies within the auto-stack ecosystem. By following these guidelines and best practices, we can build robust, reliable trading systems that leverage both traditional technical analysis and modern machine learning techniques.
