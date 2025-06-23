@@ -1,1 +1,344 @@
-{"name":"CentralBrain_Master","nodes":[{"parameters":{"httpMethod":"POST","path":"centralbrain_master","responseMode":"lastNode"},"name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[200,300]},{"parameters":{"fieldName":"command","dataPropertyName":"body"},"name":"Extract Command","type":"n8n-nodes-base.set","typeVersion":1,"position":[400,300]},{"parameters":{"fieldToTest":"={{ $json.command }}","routingRules":{"rules":[{"value":"freqtrade","output":0},{"value":"research","output":1},{"value":"freqai","output":2},{"value":"utility","output":3}]},"options":{}},"name":"Route Command","type":"n8n-nodes-base.switch","typeVersion":2,"position":[600,300]},{"parameters":{"url":"http://freqtrade-manager.localhost","method":"POST","sendBody":true,"jsonParameters":true,"options":{},"bodyParametersJson":"={"command": $json.command, "args": $json.args || {} }"},"name":"Freqtrade Manager","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,100]},{"parameters":{"url":"http://research-manager.localhost","method":"POST","sendBody":true,"jsonParameters":true,"options":{},"bodyParametersJson":"={"command": $json.command, "args": $json.args || {} }"},"name":"Research Manager","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,200]},{"parameters":{"url":"http://freqai-manager.localhost","method":"POST","sendBody":true,"jsonParameters":true,"options":{},"bodyParametersJson":"={"command": $json.command, "args": $json.args || {} }"},"name":"FreqAI Manager","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,300]},{"parameters":{"url":"http://utility-manager.localhost","method":"POST","sendBody":true,"jsonParameters":true,"options":{},"bodyParametersJson":"={"command": $json.command, "args": $json.args || {} }"},"name":"Utility Manager","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[800,400]},{"parameters":{"url":"http://openrouter-proxy.localhost/v1/chat/completions","method":"POST","sendHeaders":true,"headerParameters":{"parameters":[{"name":"Authorization","value":"Bearer sk-dummy"}]},"sendBody":true,"jsonParameters":true,"bodyParametersJson":"={"model":"mistral-7b-instruct","messages":[{"role":"system","content":"Classify this command: freqtrade, research, utility, freqai."},{"role":"user","content": $json.command }]}"},"name":"Classify via LLM","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[600,500]},{"parameters":{"values":{"string":[{"name":"status","value":"success"},{"name":"message","value":"={{ $json.response || 'Command dispatched successfully' }}"}]},"options":{}},"name":"Response Formatter","type":"n8n-nodes-base.set","typeVersion":1,"position":[1000,300]},{"parameters":{"operation":"insert","table":"agent_logs","columns":["agent","workflow","action","status","details"],"values":[["CentralBrain_Master","={{ $workflow.name }}","={{ $json.command }}","success","={{ $json }}"]]},"name":"Log to Postgres","type":"n8n-nodes-base.postgres","typeVersion":1,"position":[1000,400],"credentials":{"postgres":{"id":"REPLACE_THIS"}}}],"connections":{"Webhook":{"main":[[{"node":"Extract Command","type":"main","index":0}]]},"Extract Command":{"main":[[{"node":"Route Command","type":"main","index":0}]]},"Route Command":{"main":[[{"node":"Freqtrade Manager","type":"main","index":0}],[{"node":"Research Manager","type":"main","index":0}],[{"node":"FreqAI Manager","type":"main","index":0}],[{"node":"Utility Manager","type":"main","index":0}],[{"node":"Classify via LLM","type":"main","index":0}]]},"Freqtrade Manager":{"main":[[{"node":"Log to Postgres","type":"main","index":0}]]},"Research Manager":{"main":[[{"node":"Log to Postgres","type":"main","index":0}]]},"FreqAI Manager":{"main":[[{"node":"Log to Postgres","type":"main","index":0}]]},"Utility Manager":{"main":[[{"node":"Log to Postgres","type":"main","index":0}]]},"Classify via LLM":{"main":[[{"node":"Response Formatter","type":"main","index":0}]]},"Response Formatter":{"main":[[{"node":"Log to Postgres","type":"main","index":0}]]}}
+{
+    "name": "CentralBrain_Master",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "centralbrain_master",
+                "responseMode": "lastNode"
+            },
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fieldName": "command",
+                "dataPropertyName": "body"
+            },
+            "name": "Extract Command",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fieldToTest": "={{ $json.command }}",
+                "routingRules": {
+                    "rules": [
+                        {
+                            "value": "freqtrade",
+                            "output": 0
+                        },
+                        {
+                            "value": "research",
+                            "output": 1
+                        },
+                        {
+                            "value": "freqai",
+                            "output": 2
+                        },
+                        {
+                            "value": "utility",
+                            "output": 3
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Route Command",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 2,
+            "position": [
+                600,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://freqtrade-manager.localhost",
+                "method": "POST",
+                "sendBody": true,
+                "jsonParameters": true,
+                "options": {},
+                "bodyParametersJson": "={"command": $json.command, "args": $json.args || {} }"
+            },
+            "name": "Freqtrade Manager",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                800,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://research-manager.localhost",
+                "method": "POST",
+                "sendBody": true,
+                "jsonParameters": true,
+                "options": {},
+                "bodyParametersJson": "={"command": $json.command, "args": $json.args || {} }"
+            },
+            "name": "Research Manager",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                800,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://freqai-manager.localhost",
+                "method": "POST",
+                "sendBody": true,
+                "jsonParameters": true,
+                "options": {},
+                "bodyParametersJson": "={"command": $json.command, "args": $json.args || {} }"
+            },
+            "name": "FreqAI Manager",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://utility-manager.localhost",
+                "method": "POST",
+                "sendBody": true,
+                "jsonParameters": true,
+                "options": {},
+                "bodyParametersJson": "={"command": $json.command, "args": $json.args || {} }"
+            },
+            "name": "Utility Manager",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                800,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "url": "http://openrouter-proxy.localhost/v1/chat/completions",
+                "method": "POST",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "={{ 'Bearer ' + $env.OPENROUTER_API_KEY }}"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "jsonParameters": true,
+                "bodyParametersJson": "={"model":"mistral-7b-instruct","messages":[{"role":"system","content":"Classify this command: freqtrade, research, utility, freqai."},{"role":"user","content": $json.command }]}"
+            },
+            "name": "Classify via LLM",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                600,
+                500
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "status",
+                            "value": "success"
+                        },
+                        {
+                            "name": "message",
+                            "value": "={{ $json.response || 'Command dispatched successfully' }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Response Formatter",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "table": "agent_logs",
+                "columns": [
+                    "agent",
+                    "workflow",
+                    "action",
+                    "status",
+                    "details"
+                ],
+                "values": [
+                    [
+                        "CentralBrain_Master",
+                        "={{ $workflow.name }}",
+                        "={{ $json.command }}",
+                        "success",
+                        "={{ $json }}"
+                    ]
+                ]
+            },
+            "name": "Log to Postgres",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                400
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "REPLACE_THIS"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Command",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Command": {
+            "main": [
+                [
+                    {
+                        "node": "Route Command",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Route Command": {
+            "main": [
+                [
+                    {
+                        "node": "Freqtrade Manager",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Research Manager",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "FreqAI Manager",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Utility Manager",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Classify via LLM",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Freqtrade Manager": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Research Manager": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "FreqAI Manager": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Utility Manager": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Classify via LLM": {
+            "main": [
+                [
+                    {
+                        "node": "Response Formatter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Response Formatter": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }

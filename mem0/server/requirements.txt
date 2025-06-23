@@ -1,4 +1,4 @@
-mem0ai==0.1.101
+mem0ai==0.1.108
 fastapi
 uvicorn[standard]
 qdrant-client

@@ -52,3 +52,15 @@ This prompt hub integrates with:
 2. **Version Control**: Track prompt changes with meaningful commit messages
 3. **Testing**: Validate prompt changes across affected services
 4. **Documentation**: Keep README files current with structural changes
+
+## clean compose cycle
+- In your auto-stack Ops terminal:
+```
+cd ~/projects/auto-stack
+docker compose down          # stops & removes network/labels cleanly
+docker compose up -d         # rebuild+start with correct labels & networks
+```
+or
+```
+docker compose down && docker compose up -d
+```

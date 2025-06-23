@@ -254,7 +254,7 @@ This section provides a comprehensive reference for all environment variables us
 - **`OPENROUTER_PROXY_SERVICE_URL`**: Internal URL for the OpenRouter Proxy, used when the Controller proxies LLM requests for Mem0.
   - *Sample Value:* `http://openrouter_proxy_auto:8000/v1`
 - **`CONTROLLER_OPENROUTER_API_KEY`**: Your actual OpenRouter API key, used by the Controller for Mem0's LLM requests.
-  - *Sample Value:* `sk-or-v1-abc...`
+  - *Sample Value:* `<OPENROUTER_API_KEY>`
 
 #### 3. Mem0 (`mem0_auto`)
 - **`MEM0_HOST_PORT`**: The **host port** mapped to Mem0's internal port, for direct access from the host machine.
@@ -262,7 +262,7 @@ This section provides a comprehensive reference for all environment variables us
 - **`MEM0_HOST`**: The hostname for Mem0, used for Traefik routing.
   - *Sample Value:* `mem0.localhost`
 - **`OPENAI_API_KEY`**: **Your Hugging Face Token** (e.g., `hf_...`). Mem0 sends this as the bearer token to the Controller's embedding proxy.
-  - *Sample Value:* `hf_YourToken...`
+  - *Sample Value:* `<HF_TOKEN>`
 - **`OPENAI_BASE_URL`**: **Must point to the Controller's proxy URL** for OpenAI-compatible requests.
   - *Sample Value:* `http://controller_auto:5050/mem0_openai_proxy/v1`
 - **`QDRANT_HOST`**: Hostname of the Qdrant service.
@@ -281,8 +281,8 @@ This section provides a comprehensive reference for all environment variables us
   - *Sample Value:* `5433`
 
 #### 5. OpenRouter Proxy (`openrouter_proxy_auto`)
-- **`OPENROUTER_API_KEY`**: Your API Key for OpenRouter.ai.
-  - *Sample Value:* `sk-or-v1-abc...`
+- **`OPENROUTER_API_KEY`**: Your API Key for OpenRouter.
+  - *Sample Value:* `<OPENROUTER_API_KEY>`
 - **`OPENROUTER_PROXY_PORT`**: **Host port** mapped to the internal proxy port.
   - *Sample Value:* `8000`
 - **`YOUR_SITE_URL`** (Optional): Your app's URL, sent as `HTTP-Referer` to OpenRouter for analytics.

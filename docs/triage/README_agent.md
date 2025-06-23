@@ -219,7 +219,7 @@ Follow this guide carefully when working with Mem0 integration tasks to ensure p
 * **n8n Workflow Setup:**
   * `n8n_workflow_UnifiedLogging.json` (subworkflow for logging to `agent_logs` table) has been successfully configured and tested.
   * The `agent_logs` and `mem0_memory_events` tables have been created in the PostgreSQL database.
-  * Next workflow to configure: `n8n_workflow_Mem0_Memory_Logger.json`.
+  * **[DONE]** `n8n_workflow_Mem0_Memory_Logger.json` configured and validated against n8n CE v1.97.1.
 
 ## 🔄 Handoff Notes & Current `freq-chat` Status (as of 2025-05-26)
 

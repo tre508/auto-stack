@@ -211,7 +211,7 @@ For complete setup, configuration, and integration guidance for the self-hosted 
 - **n8n Workflow Setup Progress:**
     - `n8n_workflow_UnifiedLogging.json` (subworkflow for logging to `agent_logs` table) has been successfully configured and tested.
     - The `agent_logs` and `mem0_memory_events` tables have been created in the PostgreSQL database.
-    - Next workflow to configure: `n8n_workflow_Mem0_Memory_Logger.json`.
+    - **[DONE]** `n8n_workflow_Mem0_Memory_Logger.json` configured and validated (imports cleanly in n8n CE v1.97.1).
 
 > **Key Priority for All Agents:**
 > - Complete Cross-Stack Integration Validation, focusing on `freq-chat`'s ability to drive workflows through n8n, the Controller, and interact with Mem0 and Freqtrade.

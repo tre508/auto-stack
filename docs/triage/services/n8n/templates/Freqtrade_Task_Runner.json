@@ -124,9 +124,16 @@
       ]
     }
   },
+  "active": true,
   "settings": {},
   "staticData": null,
   "pinData": {},
   "versionId": "placeholder-version-id",
-  "tags": ["Freqtrade", "Task", "Backtest", "Hyperopt"]
-} 
+  "tags": [
+    "Freqtrade",
+    "Task",
+    "Backtest",
+    "Hyperopt"
+  ],
+  "version": 2
+}

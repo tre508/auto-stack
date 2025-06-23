@@ -32,7 +32,7 @@
         800,
         300
       ],
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "description": "Sends DELETE request to remove the Qdrant collection",
       "continueOnFail": true
     },
@@ -79,6 +79,11 @@
   },
   "active": true,
   "settings": {},
-  "tags": ["mem0", "qdrant", "vector-db", "maintenance"],
+  "tags": [
+    "mem0",
+    "qdrant",
+    "vector-db",
+    "maintenance"
+  ],
   "version": 2
-} 
+}

@@ -1,0 +1,171 @@
+{
+    "name": "PerformanceMonitoring_Agent",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "value": 1
+                        }
+                    ]
+                }
+            },
+            "name": "Hourly Performance Check",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                200,
+                300
+            ],
+            "notes": "Triggers performance monitoring every hour"
+        },
+        {
+            "parameters": {
+                "command": "docker exec freqtrade freqtrade show_trades --config /freqtrade/user_data/config.json --days 1",
+                "options": {}
+            },
+            "name": "Get Live Trade Performance",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ],
+            "notes": "Gets live trading performance for the last 24 hours."
+        },
+        {
+            "parameters": {
+                "functionCode": "// Parse live trade output for metrics\nconst output = $json[\"stdout\"] || \"\";\nconst pnlMatch = output.match(/Total profit: ([\\-\\d\\.]+)%/);\nconst tradesMatch = output.match(/(\\d+) trades/);\nconst winRateMatch = output.match(/Win rate: ([\\d\\.]+)%/);\nconst avgProfitMatch = output.match(/Avg profit: ([\\-\\d\\.]+)%/);\n\nconst timestamp = new Date().toISOString();\nconst runId = `live_${timestamp.replace(/[:.]/g, '_')}`;\n\nreturn [{\n  json: {\n    strategy: \"live_trading\",\n    timerange: \"last_24h\",\n    pnl_pct: pnlMatch ? parseFloat(pnlMatch[1]) : null,\n    trades: tradesMatch ? parseInt(tradesMatch[1]) : 0,\n    win_rate: winRateMatch ? parseFloat(winRateMatch[1]) : null,\n    avg_profit: avgProfitMatch ? parseFloat(avgProfitMatch[1]) : null,\n    run_id: runId,\n    status: 'success',\n    error: null,\n    timestamp: timestamp\n  }\n}];"
+            },
+            "name": "Parse Live Performance",
+            "type": "n8n-nodes-base.function",
+            "typeVersion": 1,
+            "position": [
+                600,
+                300
+            ],
+            "notes": "Extracts key metrics from live trading output."
+        },
+        {
+            "parameters": {
+                "table": "agent_logs",
+                "columns": [
+                    "agent",
+                    "workflow",
+                    "action",
+                    "status",
+                    "details",
+                    "error"
+                ],
+                "values": [
+                    {
+                        "agent": "PerformanceMonitoring_Agent",
+                        "workflow": "PerformanceMonitoring_Agent",
+                        "action": "live_performance_check",
+                        "status": "success",
+                        "details": "{{$json}}",
+                        "error": ""
+                    }
+                ]
+            },
+            "name": "Log to Postgres",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ],
+            "notes": "Logs live performance results."
+        },
+        {
+            "parameters": {
+                "url": "http://controller_auto:5050/notify",
+                "options": {
+                    "bodyContentType": "json"
+                },
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "type",
+                            "value": "live_performance"
+                        },
+                        {
+                            "name": "data",
+                            "value": "={{$json}}"
+                        }
+                    ]
+                }
+            },
+            "name": "Notify Controller",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                1000,
+                300
+            ],
+            "notes": "Sends performance data to controller for Mem0 storage"
+        }
+    ],
+    "connections": {
+        "Hourly Performance Check": {
+            "main": [
+                [
+                    {
+                        "node": "Get Live Trade Performance",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Live Trade Performance": {
+            "main": [
+                [
+                    {
+                        "node": "Parse Live Performance",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Parse Live Performance": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Postgres",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log to Postgres": {
+            "main": [
+                [
+                    {
+                        "node": "Notify Controller",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": true,
+    "settings": {},
+    "id": "performance-monitoring-agent-2025",
+    "version": 2
+}

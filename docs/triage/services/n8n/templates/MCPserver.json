@@ -41,7 +41,7 @@
         80
       ],
       "executeOnce": false,
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -67,7 +67,7 @@
         -120,
         680
       ],
-      "typeVersion": 1.1
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -208,7 +208,7 @@
         280,
         640
       ],
-      "typeVersion": 3.2
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -259,7 +259,7 @@
         280
       ],
       "executeOnce": false,
-      "typeVersion": 2.2,
+      "typeVersion": 2,
       "alwaysOutputData": true
     },
     {
@@ -300,7 +300,7 @@
         80
       ],
       "executeOnce": true,
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -324,7 +324,7 @@
         280
       ],
       "executeOnce": true,
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -388,7 +388,7 @@
         980,
         480
       ],
-      "typeVersion": 2.2,
+      "typeVersion": 2,
       "alwaysOutputData": true
     },
     {
@@ -428,7 +428,7 @@
         1640,
         480
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -451,7 +451,7 @@
         540,
         480
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -474,7 +474,7 @@
         540,
         680
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -532,7 +532,7 @@
         680
       ],
       "executeOnce": false,
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -562,7 +562,7 @@
         1020,
         1100
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -592,60 +592,10 @@
         -660,
         1120
       ],
-      "typeVersion": 1.8
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "id": "4ad29b5e-bc6f-4388-82b6-9f20405878ec",
-      "name": "When chat message received",
-      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "position": [
-        -900,
-        1120
-      ],
-      "webhookId": "86a50552-8058-4896-bd7e-ab95eba073ce",
-      "typeVersion": 1.1
-    },
-    {
-      "parameters": {
-        "sseEndpoint": "=<Production URL of MCP Server>"
-      },
-      "id": "9da82029-760b-4a00-8dd1-1401d2b6e0b6",
-      "name": "MCP Client",
-      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
-      "position": [
-        -420,
-        1320
-      ],
       "typeVersion": 1
     },
     {
       "parameters": {
-        "contextWindowLength": 30
-      },
-      "id": "253c31c5-c0e5-4cdf-97c8-de3be97a9e59",
-      "name": "Simple Memory",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "position": [
-        -560,
-        1320
-      ],
-      "typeVersion": 1.3
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "bce29a06-cff6-4409-96d2-04cc858a0e98",
-              "name": "data",
-              "type": "array",
-              "value": "={{ $json.data.parseJson() }}"
-            }
-          ]
-        },
         "options": {}
       },
       "id": "3669c1a6-abbb-4ee6-8a77-3977e70e8801",
@@ -655,7 +605,7 @@
         580,
         1200
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -689,7 +639,7 @@
         800,
         1200
       ],
-      "typeVersion": 2.2
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -712,7 +662,7 @@
         1020,
         1300
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -746,7 +696,7 @@
         980,
         280
       ],
-      "typeVersion": 2.2
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -819,7 +769,7 @@
         -860,
         540
       ],
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -878,7 +828,7 @@
         -760,
         640
       ],
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -937,7 +887,7 @@
         -640,
         740
       ],
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -996,7 +946,7 @@
         -520,
         640
       ],
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -1055,7 +1005,7 @@
         -400,
         540
       ],
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -1100,7 +1050,7 @@
         1100
       ],
       "executeOnce": false,
-      "typeVersion": 1.2
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -1151,7 +1101,7 @@
         -720,
         1320
       ],
-      "typeVersion": 1.2,
+      "typeVersion": 1,
       "credentials": {
         "openAiApi": {
           "id": "fTTlIGK9d1nwHErg",
@@ -1191,7 +1141,7 @@
         1200,
         480
       ],
-      "typeVersion": 2.2
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -1666,5 +1616,6 @@
     "instanceId": "d993c0f3e3f8d1b2de7570d9d3c4dd91b07329d941a24a470d05536ec26477dd"
   },
   "id": "32wmUs5cGEu3I2H2",
-  "tags": []
+  "tags": [],
+  "version": 2
 }

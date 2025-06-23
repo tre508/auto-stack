@@ -72,7 +72,7 @@ This document outlines the environment variables and configuration settings requ
 - [✅] `MEM0_HOST_PORT` [R] - Host port mapped to Mem0 container's internal port (e.g., `7860` in `.env`).
 - [✅] `PORT` [R] - Internal port the Mem0 FastAPI server listens on inside the container (e.g., `8000`, set in `docker-compose.yml` or Dockerfile).
 - [✅] `MEM0_API_HOST` [R] - Host for Mem0 API to listen on inside container (typically `0.0.0.0`).
-- [🚧] `OPENAI_API_KEY` [S] - For Mem0 service: This should be set to your **Hugging Face Token** (e.g., `hf_YourToken...`). Mem0 will send this as a Bearer token. The controller's `/mem0_openai_proxy/v1/embeddings` endpoint will receive this and forward it to the HF Space.
+- [🚧] `OPENAI_API_KEY` [S] - For Mem0 service: This should be set to your **Hugging Face Token** (e.g., `<HF_TOKEN>`). Mem0 will send this as a Bearer token. The controller's `/mem0_openai_proxy/v1/embeddings` endpoint will receive this and forward it to the HF Space.
 - [🚧] `OPENAI_BASE_URL` [R] - For Mem0 service: This must point to the controller's proxy base URL (e.g., `http://controller_auto:5050/mem0_openai_proxy/v1`).
 - [✅] `MEM0_CONFIG_PATH` [P] - Path to Mem0 `config.yaml` inside the container (e.g., `/app/config.yaml`). (Note: `config.yaml` sets `provider: "openai"` for both LLM and embedder).
 

@@ -29,9 +29,21 @@ services:
       dockerfile: n8n_auto.Dockerfile
     container_name: n8n_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5678/healthz" ]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
     env_file:
-      - ./.env       # Load shared variables
-      - ./n8n.env    # Load n8n specific variables
+      - ./.env # Load shared variables
+      - ./n8n.env # Load n8n specific variables
     environment:
       # Variables from .env and n8n.env will be loaded.
       # Explicit environment settings here can override them or provide defaults if not in env_files.
@@ -40,9 +52,9 @@ services:
       # GENERIC_TIMEZONE is in n8n.env (takes from TZ in root .env)
       - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL} # Ensure this is picked up from root .env
     volumes:
-      - /d/docker-volumes/n8n_data:/home/node/.n8n # Standard n8n data
-      - /d/docker-volumes/n8n_host_vault:/host_vault # For Doc_Mirror_Update.json
-      - /d/docker-volumes/n8n_mem0_backups:/data/mem0_backups # For n8n_workflow_Mem0_Memory_Logger.json backups
+      - /home/gleshen/docker-volumes/n8n_data:/home/node/.n8n # Standard n8n data
+      - /home/gleshen/docker-volumes/n8n_host_vault:/host_vault # For Doc_Mirror_Update.json
+      - /home/gleshen/docker-volumes/n8n_mem0_backups:/data/mem0_backups # For n8n_workflow_Mem0_Memory_Logger.json backups
       - /var/run/docker.sock:/var/run/docker.sock # For docker exec commands
     networks:
       - auto-stack-net
@@ -60,12 +72,18 @@ services:
       dockerfile: Dockerfile
     container_name: bge_embedding_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
     environment:
       - HF_HOME=/tmp/huggingface_cache # As per its Dockerfile
       - TRANSFORMERS_CACHE=/tmp/huggingface_cache/transformers
       # Add any other specific model or API keys if the embedding service requires them
     volumes:
-      - "/d/docker-volumes/hf_cache:/tmp/huggingface_cache" # Persist downloaded models on D:
+      - "/storage/docker-volumes/hf_cache:/tmp/huggingface_cache" # Persist downloaded models on HDD
     networks:
       - auto-stack-net
     ports:
@@ -88,6 +106,18 @@ services:
     build: ./controller
     container_name: controller_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:5050/status" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     env_file:
       - ./.env # Load shared variables from the root .env first
       - ./controller/.env # Then load service-specific variables
@@ -119,6 +149,18 @@ services:
       dockerfile: Dockerfile.eko
     container_name: eko_service_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3001/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     env_file:
       - ./.env # Load shared variables
       - ./controller/eko.env # Load Eko specific variables
@@ -132,6 +174,18 @@ services:
     build: ./openrouter_proxy
     container_name: openrouter_proxy_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthz" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     env_file:
       - ./.env # Load shared variables
       - ./openrouter_proxy/.env # Load OpenRouter Proxy specific variables
@@ -149,11 +203,17 @@ services:
     image: qdrant/qdrant:latest
     container_name: qdrant_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 1G
     ports:
       - "${QDRANT_EXTERNAL_REST_PORT:-6333}:6333"
       - "${QDRANT_EXTERNAL_GRPC_PORT:-6334}:6334"
     volumes:
-      - "/d/docker-volumes/qdrant_storage:/qdrant/storage"
+      - "/home/gleshen/docker-volumes/qdrant_storage:/qdrant/storage"
     networks:
       - auto-stack-net
     environment:
@@ -165,6 +225,18 @@ services:
       dockerfile: Dockerfile
     container_name: mem0_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+    # healthcheck:
+    #   test: [ "CMD", "curl", "-f", "http://localhost:8000/status" ]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 60s
     env_file:
       - ./.env # Load shared variables (like HF_TOKEN)
       - ./mem0/.env # Load Mem0 specific variables (MEM0_HOST, MEM0_PORT, QDRANT_HOST etc.)
@@ -173,14 +245,15 @@ services:
       # PORT (internal, e.g. 8000) is in mem0/.env
       # OPENAI_API_KEY (which is HF_TOKEN) is in root .env
       # OPENAI_BASE_URL should be set here or in mem0/.env to point to the correct embedder proxy
+      - OPENAI_API_KEY=${HF_TOKEN} # Use HF_TOKEN as OPENAI_API_KEY for Mem0
       - OPENAI_BASE_URL=http://controller_auto:5050/mem0_openai_proxy/v1 # Example, ensure correct
       - QDRANT_HOST=qdrant_auto # This is also in mem0/.env, ensure consistency
-      - QDRANT_PORT=6333      # This is also in mem0/.env, ensure consistency
+      - QDRANT_PORT=6333 # This is also in mem0/.env, ensure consistency
     ports:
       - "${MEM0_EXTERNAL_PORT:-8000}:8000" # Internal port is 8000 (from its .env)
     volumes:
       - ./mem0/server/config.yaml:/app/config.yaml:ro
-      - "/d/docker-volumes/mem0_data:/data" # Assuming /data is a generic data dir for mem0
+      - "/home/gleshen/docker-volumes/mem0_data:/data" # Assuming /data is a generic data dir for mem0
     networks:
       - auto-stack-net
     depends_on:
@@ -195,13 +268,25 @@ services:
     image: postgres:15 # Or specific version like postgres:15-alpine
     container_name: postgres_logging_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     env_file:
       - ./.env # Loads POSTGRES_LOGGING_USER, POSTGRES_LOGGING_PASSWORD, POSTGRES_LOGGING_DB
     ports:
       - "${POSTGRES_LOGGING_EXTERNAL_PORT:-5432}:5432" # Uses renamed var from root .env
     # environment: # Removed as all variables are in env_file
     volumes:
-      - /d/docker-volumes/pg_logs_data:/var/lib/postgresql/data # Mapped to default PGDATA
+      - /storage/docker-volumes/pg_logs_data:/var/lib/postgresql/data # Mapped to default PGDATA on HDD
     networks:
       - auto-stack-net
 
@@ -215,6 +300,18 @@ services:
         - POSTGRES_URL_BUILD_ARG=postgresql://freqchat_user:7453@postgres_logging_auto:5432/freqchat_db
     container_name: freq_chat_auto
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
     env_file:
       # Freq-Chat's Next.js app should pick up .env.development.local or .env.production
       - ./freq-chat/.env.development.local # Or .env.production depending on NODE_ENV

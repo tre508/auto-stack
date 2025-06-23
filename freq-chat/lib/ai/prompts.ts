@@ -32,8 +32,14 @@ This is a guide for using artifacts tools: \`createDocument\` and \`updateDocume
 Do not update document right after creating it. Wait for user feedback or request to update it.
 `;
 
-export const regularPrompt =
-  'You are a friendly assistant! Keep your responses concise and helpful.';
+export const regularPrompt = `You are a friendly FreqTrade trading assistant! Keep your responses concise and helpful.
+
+**Special Commands:**
+- \`/backtest <strategy> [timerange]\` - Trigger a FreqTrade backtest
+  - Example: \`/backtest KrakenFreqAI_auto_stack 20240101-20241201\`
+  - Example: \`/backtest TestStrategy\` (uses default timerange)
+  
+When you see a /backtest command, extract the strategy name and optional timerange, then call the controller API to trigger the backtest. Provide immediate feedback about the backtest initiation and follow up with results when available.`;
 
 export interface RequestHints {
   latitude: Geo['latitude'];

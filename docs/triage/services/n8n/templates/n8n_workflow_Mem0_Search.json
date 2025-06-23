@@ -35,7 +35,7 @@
         800,
         300
       ],
-      "typeVersion": 3.2,
+      "typeVersion": 3,
       "description": "Prepends the BGE prompt wrapper to improve embedding quality"
     },
     {
@@ -74,7 +74,7 @@
         1020,
         300
       ],
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "description": "Sends the search request to Mem0"
     },
     {
@@ -128,6 +128,10 @@
   },
   "active": true,
   "settings": {},
-  "tags": ["mem0", "search", "bge-embeddings"],
+  "tags": [
+    "mem0",
+    "search",
+    "bge-embeddings"
+  ],
   "version": 2
-} 
+}

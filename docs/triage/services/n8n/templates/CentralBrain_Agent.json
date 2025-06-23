@@ -8,7 +8,7 @@
       "id": "b24b05a7-d802-4413-bfb1-23e1e76f6203",
       "name": "When chat message received",
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         -1720,
         300
@@ -60,7 +60,7 @@
       "id": "41174c8a-6ac8-42bd-900e-ca15196600c5",
       "name": "Agent",
       "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
+      "typeVersion": 1,
       "position": [
         -1480,
         320
@@ -137,7 +137,7 @@
       "id": "63863ba4-d32b-42d8-829d-470c0cb9e3eb",
       "name": "Call DocAgent",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "position": [
         -240,
         -340
@@ -155,7 +155,7 @@
       "id": "6bc2f90d-333b-4795-af0c-bfa8c5e92911",
       "name": "Call FreqtradeSpecialist_Agent",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "position": [
         -240,
         -160
@@ -173,7 +173,7 @@
       "id": "3bbce76b-f469-417d-aa15-2d386b1018e8",
       "name": "Call NotificationAgent",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "position": [
         -240,
         20
@@ -191,7 +191,7 @@
       "id": "9685fd91-65d2-4d87-ab7d-dec55958b78e",
       "name": "Call MarketMonitor_Agent",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "position": [
         -240,
         220
@@ -202,7 +202,7 @@
       "id": "3406405a-e08a-4cb6-8b5b-12860fcec5b3",
       "name": "Set Unknown Command Response",
       "type": "n8n-nodes-base.set",
-      "typeVersion": 2.2,
+      "typeVersion": 2,
       "position": [
         -540,
         340
@@ -237,7 +237,7 @@
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         -1000,
         120
@@ -248,7 +248,7 @@
     {
       "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
+      "typeVersion": 1,
       "position": [
         -1460,
         640
@@ -272,7 +272,7 @@
         "assignees": []
       },
       "type": "n8n-nodes-base.githubTool",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         -1140,
         760
@@ -299,7 +299,7 @@
         }
       },
       "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
-      "typeVersion": 2.2,
+      "typeVersion": 2,
       "position": [
         -820,
         440
@@ -334,7 +334,7 @@
     {
       "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.toolCode",
-      "typeVersion": 1.2,
+      "typeVersion": 1,
       "position": [
         -960,
         460
@@ -365,7 +365,7 @@
         }
       },
       "type": "n8n-nodes-base.mySqlTool",
-      "typeVersion": 2.4,
+      "typeVersion": 2,
       "position": [
         -1280,
         640
@@ -383,7 +383,7 @@
         "options": {}
       },
       "type": "n8n-nodes-base.notionTool",
-      "typeVersion": 2.2,
+      "typeVersion": 2,
       "position": [
         -1040,
         800
@@ -396,7 +396,7 @@
         "otherOptions": {}
       },
       "type": "n8n-nodes-base.slackTool",
-      "typeVersion": 2.3,
+      "typeVersion": 2,
       "position": [
         -1140,
         900
@@ -419,7 +419,7 @@
         }
       },
       "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
+      "typeVersion": 2,
       "position": [
         -1360,
         720
@@ -430,7 +430,7 @@
     {
       "parameters": {},
       "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         -1800,
         520
@@ -510,7 +510,7 @@
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
-      "typeVersion": 1.2,
+      "typeVersion": 1,
       "position": [
         -1960,
         680
@@ -918,5 +918,6 @@
     "instanceId": "86a72cb17b8cb1b6e2035080a3f955af7f7378ac6544fba404e6df979973b7cc"
   },
   "id": "CaAzepBjFhFh5ldW",
-  "tags": []
+  "tags": [],
+  "version": 2
 }

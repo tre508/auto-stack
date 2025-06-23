@@ -38,6 +38,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { parseBacktestCommand, executeBacktest, getBacktestResults } from '@/lib/backtest-processor';
 
 export const maxDuration = 60;
 
@@ -65,6 +66,105 @@ function getStreamContext() {
   }
 
   return globalStreamContext;
+}
+
+async function handleSlashCommands(message: string): Promise<{ message: string } | null> {
+  const trimmedMessage = message.trim();
+  
+  // Handle /backtest command
+  const backtestCommand = parseBacktestCommand(trimmedMessage);
+  if (backtestCommand) {
+    const result = await executeBacktest(backtestCommand);
+    return { message: result.message };
+  }
+  
+  // Handle /results command
+  if (trimmedMessage.startsWith('/results')) {
+    const parts = trimmedMessage.split(' ');
+    const runId = parts[1];
+    
+    if (!runId) {
+      return { message: '❌ **Missing Run ID**\n\nUsage: `/results <run_id>`\n\nExample: `/results bt_2024_01_15_14_30_00`' };
+    }
+    
+    try {
+      const results = await getBacktestResults(runId);
+      if (!results || !results.results || results.results.length === 0) {
+        return { message: `❌ **No Results Found**\n\nNo results found for run ID: \`${runId}\`\n\nThis could mean:\n- The backtest is still running\n- The run ID is incorrect\n- The results haven't been stored yet\n\nTry again in a few minutes or check recent backtests with \`/recent-backtests\`.` };
+      }
+      
+      const result = results.results[0];
+      const metadata = result.metadata || {};
+      
+      return { 
+        message: `📊 **Backtest Results for ${runId}**\n\n**Strategy:** ${metadata.strategy || 'Unknown'}\n**PnL:** ${metadata.pnl_pct || 'N/A'}%\n**Sharpe Ratio:** ${metadata.sharpe || 'N/A'}\n**Max Drawdown:** ${metadata.drawdown || 'N/A'}%\n**Total Trades:** ${metadata.trades || 'N/A'}\n\n**Memory:** ${result.memory || 'No details available'}\n\n**Created:** ${result.created_at || 'Unknown'}` 
+      };
+    } catch (error) {
+      return { message: `❌ **Error Retrieving Results**\n\nFailed to get results for run ID: \`${runId}\`\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
+  }
+  
+  // Handle /recent-backtests command
+  if (trimmedMessage.startsWith('/recent-backtests')) {
+    try {
+      const controllerUrl = process.env.CONTROLLER_API_URL || 'http://localhost:5050';
+      const response = await fetch(`${controllerUrl}/api/recent-backtests?limit=5`);
+      
+      if (!response.ok) {
+        return { message: `❌ **Error Getting Recent Backtests**\n\nController API returned: ${response.status}` };
+      }
+      
+      const data = await response.json();
+      
+      if (!data.results || data.results.length === 0) {
+        return { message: '📊 **No Recent Backtests**\n\nNo backtest results found. Run a backtest first with:\n`/backtest <strategy> <timerange>`' };
+      }
+      
+      let message = '📊 **Recent Backtests**\n\n';
+      data.results.forEach((result: any, index: number) => {
+        const metadata = result.metadata || {};
+        message += `**${index + 1}.** ${metadata.strategy || 'Unknown Strategy'}\n`;
+        message += `   • Run ID: \`${metadata.run_id || 'N/A'}\`\n`;
+        message += `   • PnL: ${metadata.pnl_pct || 'N/A'}%\n`;
+        message += `   • Trades: ${metadata.trades || 'N/A'}\n`;
+        message += `   • Created: ${result.created_at || 'Unknown'}\n\n`;
+      });
+      
+      message += '💡 **Get detailed results:** `/results <run_id>`';
+      
+      return { message };
+    } catch (error) {
+      return { message: `❌ **Error Getting Recent Backtests**\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
+  }
+  
+  // Handle /logs command
+  if (trimmedMessage.startsWith('/logs')) {
+    try {
+      const controllerUrl = process.env.CONTROLLER_API_URL || 'http://localhost:5050';
+      const response = await fetch(`${controllerUrl}/logs/tail?lines=20`);
+      
+      if (!response.ok) {
+        return { message: `❌ **Error Getting Logs**\n\nController API returned: ${response.status}` };
+      }
+      
+      const data = await response.json();
+      const logs = data.logs || 'No logs available';
+      
+      return { message: `📋 **Recent Controller Logs**\n\n\`\`\`\n${logs}\n\`\`\`` };
+    } catch (error) {
+      return { message: `❌ **Error Getting Logs**\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
+  }
+  
+  // Handle /help command
+  if (trimmedMessage === '/help' || trimmedMessage === '/commands') {
+    return { 
+      message: `🤖 **Available Slash Commands**\n\n**Trading Commands:**\n• \`/backtest <strategy> [timerange] [config]\` - Run a backtest\n• \`/results <run_id>\` - Get backtest results\n• \`/recent-backtests\` - Show recent backtest results\n\n**System Commands:**\n• \`/logs\` - Show recent controller logs\n• \`/help\` - Show this help message\n\n**Examples:**\n• \`/backtest KrakenFreqAI_auto_stack 20240101-20240301\`\n• \`/results bt_2024_01_15_14_30_00\`\n• \`/recent-backtests\`\n\n💡 **Tip:** All commands are case-insensitive and work in any chat.` 
+    };
+  }
+  
+  return null; // Not a slash command
 }
 
 export async function POST(request: Request) {
@@ -146,6 +246,43 @@ export async function POST(request: Request) {
         },
       ],
     });
+
+    // Check if this is a slash command
+    const messageContent = message.content || '';
+    const slashCommandResult = await handleSlashCommands(messageContent);
+    
+    if (slashCommandResult) {
+      // Save the assistant's response
+      const assistantMessage = {
+        chatId: id,
+        id: generateUUID(),
+        role: 'assistant' as const,
+        parts: [{ type: 'text' as const, text: slashCommandResult.message }],
+        attachments: [],
+        createdAt: new Date(),
+      };
+      
+      await saveMessages({
+        messages: [assistantMessage],
+      });
+      
+      // Return a simple text response for slash commands
+      const responseText = slashCommandResult.message;
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode(responseText));
+          controller.close();
+        },
+      });
+      
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/plain',
+          'Cache-Control': 'no-cache',
+        },
+      });
+    }
 
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });

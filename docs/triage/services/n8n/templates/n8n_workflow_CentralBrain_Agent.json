@@ -10,7 +10,10 @@
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300],
+      "position": [
+        200,
+        300
+      ],
       "notes": "Receives commands for orchestration. Input: {command, parameters}"
     },
     {
@@ -21,22 +24,37 @@
       "name": "AI Agent",
       "type": "n8n-nodes-langchain.aiagent",
       "typeVersion": 1,
-      "position": [400, 300],
+      "position": [
+        400,
+        300
+      ],
       "notes": "Processes command and determines routing."
     },
     {
       "parameters": {
         "cases": [
-          {"value": "Freqtrade", "node": "FreqtradeSpecialist_Agent"},
-          {"value": "Summarize", "node": "Summarization_Agent"},
-          {"value": "Research", "node": "ResearchAgent"}
+          {
+            "value": "Freqtrade",
+            "node": "FreqtradeSpecialist_Agent"
+          },
+          {
+            "value": "Summarize",
+            "node": "Summarization_Agent"
+          },
+          {
+            "value": "Research",
+            "node": "ResearchAgent"
+          }
         ],
         "default": "UnknownCommandHandler"
       },
       "name": "Switch",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
-      "position": [600, 300],
+      "position": [
+        600,
+        300
+      ],
       "notes": "Routes to sub-agents based on command."
     },
     {
@@ -50,7 +68,10 @@
       "name": "FreqtradeSpecialist_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [800, 200],
+      "position": [
+        800,
+        200
+      ],
       "notes": "Calls FreqtradeSpecialist_Agent for trading commands."
     },
     {
@@ -64,7 +85,10 @@
       "name": "Summarization_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [800, 300],
+      "position": [
+        800,
+        300
+      ],
       "notes": "Calls Summarization_Agent for summarization tasks."
     },
     {
@@ -78,7 +102,10 @@
       "name": "ResearchAgent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [800, 400],
+      "position": [
+        800,
+        400
+      ],
       "notes": "Calls ResearchAgent for LLM-powered research."
     },
     {
@@ -88,21 +115,41 @@
       "name": "Aggregate Results",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [1000, 300],
+      "position": [
+        1000,
+        300
+      ],
       "notes": "Aggregates and formats the response."
     },
     {
       "parameters": {
         "table": "agent_logs",
-        "columns": ["agent", "workflow", "action", "status", "details", "error"],
+        "columns": [
+          "agent",
+          "workflow",
+          "action",
+          "status",
+          "details",
+          "error"
+        ],
         "values": [
-          {"agent": "CentralBrain_Agent", "workflow": "CentralBrain_Agent", "action": "orchestration", "status": "success", "details": "{{$json}}", "error": ""}
+          {
+            "agent": "CentralBrain_Agent",
+            "workflow": "CentralBrain_Agent",
+            "action": "orchestration",
+            "status": "success",
+            "details": "{{$json}}",
+            "error": ""
+          }
         ]
       },
       "name": "Log to Postgres",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "position": [1200, 300],
+      "position": [
+        1200,
+        300
+      ],
       "notes": "Logs orchestration actions."
     },
     {
@@ -112,25 +159,119 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1400, 300],
+      "position": [
+        1400,
+        300
+      ],
       "notes": "Returns the final response."
     }
   ],
   "connections": {
-    "Webhook Trigger": {"main": [[{"node": "AI Agent", "type": "main", "index": 0}]]},
-    "AI Agent": {"main": [[{"node": "Switch", "type": "main", "index": 0}]]},
-    "Switch": {"main": [
-      [{"node": "FreqtradeSpecialist_Agent", "type": "main", "index": 0}],
-      [{"node": "Summarization_Agent", "type": "main", "index": 0}],
-      [{"node": "ResearchAgent", "type": "main", "index": 0}]
-    ]},
-    "FreqtradeSpecialist_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "Summarization_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "ResearchAgent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "Aggregate Results": {"main": [[{"node": "Log to Postgres", "type": "main", "index": 0}]]},
-    "Log to Postgres": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "FreqtradeSpecialist_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Summarization_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ResearchAgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FreqtradeSpecialist_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarization_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ResearchAgent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Log to Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Postgres": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
   "settings": {},
-  "id": "centralbrain-agent-2025"
-} 
+  "id": "centralbrain-agent-2025",
+  "version": 2
+}

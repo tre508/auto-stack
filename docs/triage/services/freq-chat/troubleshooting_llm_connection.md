@@ -25,7 +25,7 @@ The primary challenge was ensuring that the Vercel AI SDK's `@ai-sdk/openai` pro
 ### 1. Environment Variable Loading (Critical Fix)
 -   **Initial Hurdle:** Freq-Chat's `pnpm dev` process (when run from Cursor's integrated terminal) was inheriting `OPENAI_API_KEY` (as `hf_...` token) and `OPENAI_BASE_URL` (as controller's Mem0 proxy URL) from the shell environment, overriding values in `freq-chat/.env.development.local`.
 -   **Fix:** Running `pnpm dev` for `freq-chat` in a **separate, clean terminal session** (e.g., a new PowerShell window outside of Cursor) where these variables were not pre-set in the shell.
--   **Outcome:** This allowed `freq-chat/.env.development.local` to be correctly loaded. Logs from `providers.ts` and `chat/route.ts` then confirmed that `process.env.OPENAI_API_KEY` was the OpenRouter key (`sk-or-v1-9dde...`) and `process.env.OPENAI_BASE_URL` was the correct local proxy URL (`http://localhost:8001/v1`).
+-   **Outcome:** This allowed `freq-chat/.env.development.local` to be correctly loaded. Logs from `providers.ts` and `chat/route.ts` then confirmed that `process.env.OPENAI_API_KEY` was the OpenRouter key (`<OPENROUTER_API_KEY>`) and `process.env.OPENAI_BASE_URL` was the correct local proxy URL (`http://localhost:8001/v1`).
 
 ### 2. Title Generation (`freq-chat/app/(chat)/actions.ts`)
 -   **Initial Issue:** When using `generateText` via `myProvider` (which used `@ai-sdk/openai`), the call was still defaulting to `https://api.openai.com/v1/...` despite correct env vars being logged.

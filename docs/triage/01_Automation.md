@@ -69,7 +69,7 @@ vercel deploy
 * **Configuration:**
     * `mem0/server/config.yaml`: Sets `provider: "openai"` for both `llm` and `embedder`.
     * Environment variables for `mem0_auto` service (via `.env` and `docker-compose.yml`):
-        * `OPENAI_API_KEY`: Set to your **Hugging Face Token** (e.g., `hf_YourToken...`).
+        * `OPENAI_API_KEY`: Set to your **Hugging Face Token** (e.g., `<HF_TOKEN>`).
         * `OPENAI_BASE_URL`: Set to the controller's proxy endpoint (e.g., `http://controller_auto:5050/mem0_openai_proxy/v1`).
 * **Setup:** Detailed setup and integration instructions are available in `docs/guides/mem0_server_guide.md`.
 

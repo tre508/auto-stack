@@ -4,9 +4,11 @@
 vectorstore:
   provider: "qdrant"
   config:
-    host: "qdrant_mcp" # Service name of Qdrant in Docker Compose network
+    host: "qdrant_auto" # Service name of Qdrant in Docker Compose network
     port: 6333
     collection: "mem0_autostack_collection" # Or your preferred collection name
+    embedding_model_dims: 768 # Match BGE-base-en-v1.5 dimensions
+    api_key: "localqdrantkey123" # Qdrant API key
 
 # --- LLM Configuration ---
 # Uses the "openai" provider type. The actual endpoint and API key are determined
@@ -24,6 +26,7 @@ embedder:
   provider: "openai" # Changed to use OpenAI client logic
   config:
     model: "BAAI/bge-base-en-v1.5" # This model name will be sent to your HF Space API
+    embedding_dims: 768 # BGE-base-en-v1.5 produces 768-dimensional embeddings
     # The actual endpoint and API key are determined by
     # OPENAI_BASE_URL and OPENAI_API_KEY environment variables,
     # which you will set to point to your Hugging Face Space and HF Token.

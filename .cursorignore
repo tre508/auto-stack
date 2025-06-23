@@ -1,0 +1,44 @@
+# Node.js
+node_modules/
+*/node_modules/
+**/.next/
+**/dist/
+**/build/
+**/coverage/
+**/.nyc_output/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Docker & Data
+*_data/
+pgdata/
+ollama_data/
+n8n_data/
+mem0_data/
+
+# Development
+.git/
+.vscode/
+.idea/
+*.log
+*.tmp
+.cache/
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backup & Temporary
+*.bak
+*.old
+*.backup
+.env.backup*

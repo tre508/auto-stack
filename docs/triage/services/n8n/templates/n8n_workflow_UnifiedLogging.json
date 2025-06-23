@@ -7,7 +7,7 @@
         "jsonExample": "{\n  \"agent_name\": \"ExampleAgentName\",\n  \"calling_workflow_name\": \"NameOfWorkflowThatCalledThis\",\n  \"action\": \"Performed an action\",\n  \"event_type\": \"log_event\",\n  \"message\": \"This is the main log message about the action.\",\n  \"run_id\": \"run-abc-123\",\n  \"status\": \"success\",\n  \"error\": null,\n  \"metadata\": {\n    \"key1\": \"value1\",\n    \"some_metric\": 123,\n    \"additional_info\": \"more data\"\n  }\n}"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         -180,
         -20
@@ -156,7 +156,7 @@
         "options": {}
       },
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
+      "typeVersion": 2,
       "position": [
         220,
         0
@@ -215,5 +215,6 @@
     "instanceId": "7cdc797372b4e55e3ab2507a143f0ba58519bb2cbe9c89bdcbeb072065c3546c"
   },
   "id": "knCkuu3VRNYZbSTa",
-  "tags": []
+  "tags": [],
+  "version": 2
 }

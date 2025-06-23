@@ -10,17 +10,28 @@
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300],
+      "position": [
+        200,
+        300
+      ],
       "notes": "Receives text to summarize. Input: {text}"
     },
     {
       "parameters": {
-        "values": [{"name": "input_text", "value": "{{$json.text}}"}]
+        "values": [
+          {
+            "name": "input_text",
+            "value": "{{$json.text}}"
+          }
+        ]
       },
       "name": "Set Input",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [400, 300],
+      "position": [
+        400,
+        300
+      ],
       "notes": "Maps input text for LLM."
     },
     {
@@ -32,7 +43,10 @@
       "name": "OpenAI LLM",
       "type": "n8n-nodes-base.openai",
       "typeVersion": 1,
-      "position": [600, 300],
+      "position": [
+        600,
+        300
+      ],
       "notes": "Calls LLM to summarize text."
     },
     {
@@ -42,7 +56,10 @@
       "name": "Format Output",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [800, 300],
+      "position": [
+        800,
+        300
+      ],
       "notes": "Formats LLM response."
     },
     {
@@ -52,17 +69,61 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1000, 300],
+      "position": [
+        1000,
+        300
+      ],
       "notes": "Returns the summary."
     }
   ],
   "connections": {
-    "Webhook Trigger": {"main": [[{"node": "Set Input", "type": "main", "index": 0}]]},
-    "Set Input": {"main": [[{"node": "OpenAI LLM", "type": "main", "index": 0}]]},
-    "OpenAI LLM": {"main": [[{"node": "Format Output", "type": "main", "index": 0}]]},
-    "Format Output": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Input": {
+      "main": [
+        [
+          {
+            "node": "OpenAI LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI LLM": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
   "settings": {},
-  "id": "summarization-agent-2025"
-} 
+  "id": "summarization-agent-2025",
+  "version": 2
+}

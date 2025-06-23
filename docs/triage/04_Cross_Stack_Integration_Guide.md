@@ -87,7 +87,7 @@ This pattern allows n8n workflows to access a wide range of LLMs from OpenRouter
 - **Mechanism:** n8n workflows use the "HTTP Request" node to call the `openrouter_proxy_auto` service.
 - **Endpoint:** `http://openrouter-proxy.localhost/v1/chat/completions` (via Traefik).
 - **Payload:** Standard OpenAI API request format.
-- **Authentication:** The `openrouter_proxy_auto` service injects the `OPENROUTER_API_KEY`. The n8n request node should send a dummy `Authorization: Bearer sk-dummykey` header.
+- **Authentication:** The `openrouter_proxy_auto` service injects the `OPENROUTER_API_KEY`. The n8n request node should send a dummy `Authorization: Bearer <OPENROUTER_API_KEY>` header.
 - **Response:** Standard OpenAI API response format.
 - **n8nChat and AI Nodes:** The **n8nChat browser extension** and n8n's **AI/MCP nodes** can also be configured to use this proxy, enabling natural language workflow creation and the ability to expose n8n workflows as callable tools for other AI agents.
 

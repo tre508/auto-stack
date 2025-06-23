@@ -10,23 +10,41 @@
       "name": "HTTP Request Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300],
+      "position": [
+        200,
+        300
+      ],
       "notes": "Receives trading commands. Input: {command, parameters}"
     },
     {
       "parameters": {
         "cases": [
-          {"value": "Backtest", "node": "Backtest_Agent"},
-          {"value": "Hyperopt", "node": "Hyperopt_Agent"},
-          {"value": "TradeExecution", "node": "TradeExecution_Agent"},
-          {"value": "PerformanceMonitoring", "node": "PerformanceMonitoring_Agent"}
+          {
+            "value": "Backtest",
+            "node": "Backtest_Agent"
+          },
+          {
+            "value": "Hyperopt",
+            "node": "Hyperopt_Agent"
+          },
+          {
+            "value": "TradeExecution",
+            "node": "TradeExecution_Agent"
+          },
+          {
+            "value": "PerformanceMonitoring",
+            "node": "PerformanceMonitoring_Agent"
+          }
         ],
         "default": "UnknownCommandHandler"
       },
       "name": "Switch",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 1,
-      "position": [400, 300],
+      "position": [
+        400,
+        300
+      ],
       "notes": "Routes to sub-agents based on command."
     },
     {
@@ -40,7 +58,10 @@
       "name": "Backtest_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [600, 200],
+      "position": [
+        600,
+        200
+      ],
       "notes": "Calls Backtest_Agent for backtesting."
     },
     {
@@ -54,7 +75,10 @@
       "name": "Hyperopt_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [600, 250],
+      "position": [
+        600,
+        250
+      ],
       "notes": "Calls Hyperopt_Agent for hyperoptimization."
     },
     {
@@ -68,7 +92,10 @@
       "name": "TradeExecution_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [600, 300],
+      "position": [
+        600,
+        300
+      ],
       "notes": "Calls TradeExecution_Agent for trade execution."
     },
     {
@@ -82,7 +109,10 @@
       "name": "PerformanceMonitoring_Agent",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [600, 350],
+      "position": [
+        600,
+        350
+      ],
       "notes": "Calls PerformanceMonitoring_Agent for monitoring."
     },
     {
@@ -92,21 +122,41 @@
       "name": "Aggregate Results",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [800, 300],
+      "position": [
+        800,
+        300
+      ],
       "notes": "Aggregates and formats the response."
     },
     {
       "parameters": {
         "table": "agent_logs",
-        "columns": ["agent", "workflow", "action", "status", "details", "error"],
+        "columns": [
+          "agent",
+          "workflow",
+          "action",
+          "status",
+          "details",
+          "error"
+        ],
         "values": [
-          {"agent": "FreqtradeSpecialist_Agent", "workflow": "FreqtradeSpecialist_Agent", "action": "specialist", "status": "success", "details": "{{$json}}", "error": ""}
+          {
+            "agent": "FreqtradeSpecialist_Agent",
+            "workflow": "FreqtradeSpecialist_Agent",
+            "action": "specialist",
+            "status": "success",
+            "details": "{{$json}}",
+            "error": ""
+          }
         ]
       },
       "name": "Log to Postgres",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 1,
-      "position": [1000, 300],
+      "position": [
+        1000,
+        300
+      ],
       "notes": "Logs specialist actions."
     },
     {
@@ -116,26 +166,126 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1200, 300],
+      "position": [
+        1200,
+        300
+      ],
       "notes": "Returns the final response."
     }
   ],
   "connections": {
-    "HTTP Request Trigger": {"main": [[{"node": "Switch", "type": "main", "index": 0}]]},
-    "Switch": {"main": [
-      [{"node": "Backtest_Agent", "type": "main", "index": 0}],
-      [{"node": "Hyperopt_Agent", "type": "main", "index": 0}],
-      [{"node": "TradeExecution_Agent", "type": "main", "index": 0}],
-      [{"node": "PerformanceMonitoring_Agent", "type": "main", "index": 0}]
-    ]},
-    "Backtest_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "Hyperopt_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "TradeExecution_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "PerformanceMonitoring_Agent": {"main": [[{"node": "Aggregate Results", "type": "main", "index": 0}]]},
-    "Aggregate Results": {"main": [[{"node": "Log to Postgres", "type": "main", "index": 0}]]},
-    "Log to Postgres": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+    "HTTP Request Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Backtest_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Hyperopt_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TradeExecution_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PerformanceMonitoring_Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Backtest_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hyperopt_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TradeExecution_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PerformanceMonitoring_Agent": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Log to Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Postgres": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
   "settings": {},
-  "id": "freqtrade-specialist-agent-2025"
-} 
+  "id": "freqtrade-specialist-agent-2025",
+  "version": 2
+}

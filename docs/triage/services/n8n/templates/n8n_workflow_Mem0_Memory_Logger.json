@@ -1,13 +1,12 @@
 {
-  "name": "Mem0 Memory Logger",
+  "name": "Mem0_Memory_Logger",
   "nodes": [
     {
       "parameters": {
         "rule": {
           "interval": [
             {
-              "field": "hours",
-              "minutesInterval": 1
+              "field": "hours"
             }
           ]
         }
@@ -16,103 +15,155 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1,
       "position": [
-        250,
-        300
-      ]
+        -220,
+        40
+      ],
+      "id": "3b9e16e2-b941-4d1d-8ee2-e6035f7a9e55"
     },
     {
       "parameters": {
-        "operation": "select",
-        "schema": "public",
-        "table": "agent_logs",
-        "conditions": {
-          "timestamp": "> {{$now - 1h}}"
-        },
-        "returnFields": "*"
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM agent_logs\nWHERE timestamp > NOW() - INTERVAL '1 hour';",
+        "options": {}
       },
-      "name": "Postgres",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 1,
+      "typeVersion": 2,
       "position": [
-        450,
-        300
+        0,
+        40
       ],
+      "id": "66ab6d42-170c-4afc-a4b5-ef0f528c6793",
+      "name": "Postgres_Select",
       "credentials": {
         "postgres": {
-          "id": "1",
+          "id": "Jwo9TQK2K1qAxlr8",
           "name": "Postgres account"
         }
       }
     },
     {
       "parameters": {
-        "functionCode": "// Group logs by event_type\nconst groupedLogs = {};\n\nfor (const log of $input.all()) {\n  const eventType = log.event_type || 'unknown';\n  if (!groupedLogs[eventType]) {\n    groupedLogs[eventType] = [];\n  }\n  groupedLogs[eventType].push(log);\n}\n\n// Generate markdown content\nlet markdown = '# Auto-Stack Activity Report\\n\\n';\nmarkdown += `Generated: ${new Date().toISOString()}\\n\\n`;\n\nfor (const [eventType, logs] of Object.entries(groupedLogs)) {\n  markdown += `## ${eventType}\\n\\n`;\n  for (const log of logs) {\n    markdown += `- ${log.timestamp}: ${log.message}\\n`;\n    if (log.metadata) {\n      markdown += `  - Metadata: ${JSON.stringify(log.metadata)}\\n`;\n    }\n  }\n  markdown += '\\n';\n}\n\nreturn { markdown };"
+        "command": "=mkdir -p /tmp/mem0_reports"
       },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        200,
+        40
+      ],
+      "id": "74c7ee7a-3cc2-4ef2-a7e3-0aa98b4fecf0",
+      "name": "Execute Command",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. GROUP LOGS BY event_type\nconst grouped = {};\nfor (const item of $input.all()) {\n  const log = item.json;\n  const key = log.event_type || 'unknown';\n  if (!grouped[key]) grouped[key] = [];\n  grouped[key].push(log);\n}\n\n// 2. BUILD MARKDOWN\nlet md = '# Mem0 Activity Report\\n\\n';\nmd += `Generated: ${new Date().toISOString()}\\n\\n`;\n\nfor (const [event, logs] of Object.entries(grouped)) {\n  md += `## ${event}\\n\\n`;\n  for (const l of logs) {\n    md += `- ${l.timestamp}: ${l.message}\\n`;\n    if (l.metadata) md += `  - Metadata: ${JSON.stringify(l.metadata)}\\n`;\n    if (l.status && l.status !== 'success') {\n      md += `  - Status: ${l.status}\\n`;\n      if (l.error) md += `  - Error: ${l.error}\\n`;\n    }\n  }\n  md += '\\n';\n}\n\n// 3. PREPARE BINARY\nconst iso = new Date().toISOString().replace(/[:.]/g, '-');\nconst filename = `mem0_report_${iso}.md`;\nconst mimeType = 'text/markdown';\n\nconst data = await this.helpers.prepareBinaryData(Buffer.from(md, 'utf8'), filename, mimeType);\n\nreturn [{ json: { filename }, binary: { data } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -20
+      ],
+      "id": "6ae5d5bd-a1e5-4aab-88a9-98cce7b7f762",
       "name": "Generate Markdown",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        650,
-        300
-      ]
+      "alwaysOutputData": true,
+      "executeOnce": true
     },
     {
       "parameters": {
-        "path": "docs/triage/reports/{{$now.format('YYYY-MM-DD_HH-mm')}}_activity_report.md",
-        "content": "={{ $json.markdown }}"
-      },
-      "name": "Write File",
-      "type": "n8n-nodes-base.writeFile",
-      "typeVersion": 1,
-      "position": [
-        850,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "insert",
-        "schema": "public",
-        "table": "agent_logs",
-        "columns": {
-          "agent_name": "={{ $workflow.id }}",
-          "workflow": "={{ $workflow.id }}",
-          "action": "documentation_update",
-          "event_type": "report_generation",
-          "message": "Generated activity report",
-          "run_id": "={{ $runId }}",
-          "status": "success",
-          "metadata": "={{ $json }}"
+        "operation": "write",
+        "fileName": "=/tmp/mem0_reports/{{ $json.filename }}",
+        "options": {
+          "append": false
         }
       },
-      "name": "Log Report Generation",
-      "type": "n8n-nodes-base.postgres",
+      "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        1050,
-        300
+        640,
+        -20
       ],
+      "id": "fe5e6a5b-e44e-4375-922d-048b8d5c7e00",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "=public",
+          "mode": "name"
+        },
+        "table": {
+          "__rl": true,
+          "value": "agent_logs",
+          "mode": "list",
+          "cachedResultName": "agent_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "agent_name": "n8n",
+            "workflow": "={{ $workflow.name }}",
+            "action": "mem0_update",
+            "event_type": "report_generation",
+            "message": "={{ 'Wrote Mem0 report ' + $json.filename }}",
+            "run_id": "={{ $execution.id }}",
+            "status": "success",
+            "metadata": "={{ { path: '/tmp/mem0_reports/' + $json.filename } }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        820,
+        -20
+      ],
+      "id": "e09e7e44-382b-4d4d-8c2c-2daa015f0f8b",
+      "name": "Postgres_Insert",
       "credentials": {
         "postgres": {
-          "id": "1",
+          "id": "Jwo9TQK2K1qAxlr8",
           "name": "Postgres account"
         }
       }
     }
   ],
+  "pinData": {},
   "connections": {
     "Schedule Trigger": {
       "main": [
         [
           {
-            "node": "Postgres",
+            "node": "Postgres_Select",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Postgres": {
+    "Postgres_Select": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command": {
       "main": [
         [
           {
@@ -120,30 +171,42 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Generate Markdown": {
       "main": [
         [
           {
-            "node": "Write File",
+            "node": "Read/Write Files from Disk",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Write File": {
+    "Read/Write Files from Disk": {
       "main": [
         [
           {
-            "node": "Log Report Generation",
+            "node": "Postgres_Insert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     }
-  }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d2ccf40e-3ddb-48c5-b601-3a5fde414c26",
+  "tags": [
+    "pipe",
+    "agent",
+    "docsync"
+  ],
+  "version": 2
 }

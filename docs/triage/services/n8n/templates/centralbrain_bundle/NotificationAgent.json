@@ -1,1 +1,201 @@
-{"name":"NotificationAgent","nodes":[{"parameters":{"httpMethod":"POST","path":"notify","responseMode":"lastNode"},"name":"Webhook","type":"n8n-nodes-base.webhook","typeVersion":1,"position":[200,300]},{"parameters":{"fieldToTest":"={{ $json.channel }}","routingRules":{"rules":[{"value":"email","output":0},{"value":"discord","output":1}]},"options":{}},"name":"Route Channel","type":"n8n-nodes-base.switch","typeVersion":1,"position":[400,300]},{"parameters":{"fromEmail":"alerts@automation.local","toEmail":"team@example.com","subject":"={{ $json.type.toUpperCase() }} Notification","text":"={{ $json.message }}","options":{}},"name":"Send Email","type":"n8n-nodes-base.emailSend","typeVersion":1,"position":[600,200],"credentials":{"smtp":{"id":"REPLACE_WITH_SMTP_CREDS"}}},{"parameters":{"url":"{{ $env.DISCORD_WEBHOOK_URL }}","method":"POST","sendBody":true,"jsonParameters":true,"bodyParametersJson":"={"content": $json.message}"},"name":"Send Discord","type":"n8n-nodes-base.httpRequest","typeVersion":1,"position":[600,400]},{"parameters":{"operation":"insert","table":"agent_logs","columns":["agent","workflow","action","status","details"],"values":[["NotificationAgent","={{ $json.meta.workflow || '' }}","notify_"+$json.type,"sent","={{ $json }}"]]},"name":"Log Notification","type":"n8n-nodes-base.postgres","typeVersion":1,"position":[800,300],"credentials":{"postgres":{"id":"REPLACE_WITH_PG_CREDS"}}},{"parameters":{"values":{"string":[{"name":"response","value":"Notification sent successfully"}]},"options":{}},"name":"Notify Response","type":"n8n-nodes-base.set","typeVersion":1,"position":[1000,300]}],"connections":{"Webhook":{"main":[[{"node":"Route Channel","type":"main","index":0}]]},"Route Channel":{"main":[[{"node":"Send Email","type":"main","index":0}],[{"node":"Send Discord","type":"main","index":0}]]},"Send Email":{"main":[[{"node":"Log Notification","type":"main","index":0}]]},"Send Discord":{"main":[[{"node":"Log Notification","type":"main","index":0}]]},"Log Notification":{"main":[[{"node":"Notify Response","type":"main","index":0}]]}}
+{
+    "name": "NotificationAgent",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "notify",
+                "responseMode": "lastNode"
+            },
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fieldToTest": "={{ $json.channel }}",
+                "routingRules": {
+                    "rules": [
+                        {
+                            "value": "email",
+                            "output": 0
+                        },
+                        {
+                            "value": "discord",
+                            "output": 1
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Route Channel",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "fromEmail": "alerts@automation.local",
+                "toEmail": "team@example.com",
+                "subject": "={{ $json.type.toUpperCase() }} Notification",
+                "text": "={{ $json.message }}",
+                "options": {}
+            },
+            "name": "Send Email",
+            "type": "n8n-nodes-base.emailSend",
+            "typeVersion": 1,
+            "position": [
+                600,
+                200
+            ],
+            "credentials": {
+                "smtp": {
+                    "id": "REPLACE_WITH_SMTP_CREDS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "url": "{{ $env.DISCORD_WEBHOOK_URL }}",
+                "method": "POST",
+                "sendBody": true,
+                "jsonParameters": true,
+                "bodyParametersJson": "={"content": $json.message}"
+            },
+            "name": "Send Discord",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 1,
+            "position": [
+                600,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "table": "agent_logs",
+                "columns": [
+                    "agent",
+                    "workflow",
+                    "action",
+                    "status",
+                    "details"
+                ],
+                "values": [
+                    [
+                        "NotificationAgent",
+                        "={{ $json.meta.workflow || '' }}",
+                        "notify_"+$json.type,
+                        "sent",
+                        "={{ $json }}"
+                    ]
+                ]
+            },
+            "name": "Log Notification",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                800,
+                300
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "REPLACE_WITH_PG_CREDS"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "response",
+                            "value": "Notification sent successfully"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "name": "Notify Response",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Route Channel",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Route Channel": {
+            "main": [
+                [
+                    {
+                        "node": "Send Email",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Send Discord",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Email": {
+            "main": [
+                [
+                    {
+                        "node": "Log Notification",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send Discord": {
+            "main": [
+                [
+                    {
+                        "node": "Log Notification",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log Notification": {
+            "main": [
+                [
+                    {
+                        "node": "Notify Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": true,
+    "version": 2
+}

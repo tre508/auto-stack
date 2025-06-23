@@ -7,6 +7,7 @@
   - **[DONE]** Main Docker Compose file is now `docker-compose.yml`. **[IN PROGRESS]** Updating all documentation references.
   - **[IN PROGRESS]** Consolidate and update all documentation (`00_MasterSetup.md`, service guides, etc.) to be consistent with the latest architecture (`freq-chat`, self-hosted Mem0, controller proxy, unified logging, new .env strategy).
   - **[TODO]** Create a centralized `API_Contracts.md` document to formally define the endpoints, request/response schemas, and authentication methods for `controller_auto`, `mem0_auto`, `openrouter_proxy_auto`, and key n8n webhooks.
+  - **[DONE]** `n8n_workflow_Mem0_Memory_Logger.json` configured and validated (imports cleanly in n8n CE v1.97.1).
 
 ## Phase 5: Advanced Integration & Trading Features
 

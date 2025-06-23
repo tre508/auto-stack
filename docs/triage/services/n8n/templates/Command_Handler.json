@@ -76,7 +76,7 @@
       },
       "name": "Send to Automation Controller",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.1,
+      "typeVersion": 4,
       "position": [
         1280,
         200
@@ -159,8 +159,8 @@
         "options": {}
       },
       "name": "Execute Doc Sync",
-      "type": "n8n-nodes-base.executeWorkflow", 
-      "typeVersion": 1.2, 
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
       "position": [
         1760,
         400
@@ -174,8 +174,8 @@
         "options": {}
       },
       "name": "Execute Freqtrade Task Runner",
-      "type": "n8n-nodes-base.executeWorkflow", 
-      "typeVersion": 1.2, 
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
       "position": [
         1760,
         600
@@ -189,8 +189,8 @@
         "options": {}
       },
       "name": "Execute Freq Log",
-      "type": "n8n-nodes-base.executeWorkflow", 
-      "typeVersion": 1.2, 
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
       "position": [
         1760,
         800
@@ -204,8 +204,8 @@
         "options": {}
       },
       "name": "Execute Stock Analysis",
-      "type": "n8n-nodes-base.executeWorkflow", 
-      "typeVersion": 1.2, 
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
       "position": [
         1760,
         1000
@@ -219,8 +219,8 @@
         "options": {}
       },
       "name": "Execute MCP Server",
-      "type": "n8n-nodes-base.executeWorkflow", 
-      "typeVersion": 1.2, 
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1,
       "position": [
         1760,
         1200
@@ -244,7 +244,7 @@
       "typeVersion": 1,
       "position": [
         1280,
-        1000 
+        1000
       ],
       "notes": "Default response if no command branches are hit, or for passthrough to LLM."
     }
@@ -353,7 +353,7 @@
           }
         ],
         [
-           {
+          {
             "node": "Default LLM/NoOp Response",
             "type": "main",
             "index": 0
@@ -366,5 +366,11 @@
   "staticData": null,
   "pinData": {},
   "versionId": "placeholder-new-version-id",
-  "tags": ["Webhook", "Controller", "Routing", "Sub-Workflow"]
-} 
+  "tags": [
+    "Webhook",
+    "Controller",
+    "Routing",
+    "Sub-Workflow"
+  ],
+  "version": 2
+}

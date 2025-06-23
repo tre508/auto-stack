@@ -10,17 +10,28 @@
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [200, 300],
+      "position": [
+        200,
+        300
+      ],
       "notes": "Receives research query. Input: {query}"
     },
     {
       "parameters": {
-        "values": [{"name": "input_query", "value": "{{$json.query}}"}]
+        "values": [
+          {
+            "name": "input_query",
+            "value": "{{$json.query}}"
+          }
+        ]
       },
       "name": "Set Query",
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
-      "position": [400, 300],
+      "position": [
+        400,
+        300
+      ],
       "notes": "Maps input query for LLM."
     },
     {
@@ -32,7 +43,10 @@
       "name": "OpenAI LLM",
       "type": "n8n-nodes-base.openai",
       "typeVersion": 1,
-      "position": [600, 300],
+      "position": [
+        600,
+        300
+      ],
       "notes": "Calls LLM with @web tool for research."
     },
     {
@@ -42,7 +56,10 @@
       "name": "Format Output",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [800, 300],
+      "position": [
+        800,
+        300
+      ],
       "notes": "Formats LLM response."
     },
     {
@@ -52,17 +69,61 @@
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1000, 300],
+      "position": [
+        1000,
+        300
+      ],
       "notes": "Returns the research result."
     }
   ],
   "connections": {
-    "Webhook Trigger": {"main": [[{"node": "Set Query", "type": "main", "index": 0}]]},
-    "Set Query": {"main": [[{"node": "OpenAI LLM", "type": "main", "index": 0}]]},
-    "OpenAI LLM": {"main": [[{"node": "Format Output", "type": "main", "index": 0}]]},
-    "Format Output": {"main": [[{"node": "Respond to Webhook", "type": "main", "index": 0}]]}
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Query": {
+      "main": [
+        [
+          {
+            "node": "OpenAI LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI LLM": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Output": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
   "settings": {},
-  "id": "llm-research-trigger-2025"
-} 
+  "id": "llm-research-trigger-2025",
+  "version": 2
+}

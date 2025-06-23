@@ -13,7 +13,7 @@
         900,
         220
       ],
-      "typeVersion": 1.3
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -31,7 +31,7 @@
         840,
         -20
       ],
-      "typeVersion": 1.7
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -91,7 +91,7 @@
         1660,
         220
       ],
-      "typeVersion": 1.2
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -110,7 +110,7 @@
         720,
         220
       ],
-      "typeVersion": 1.2
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -123,7 +123,7 @@
         1620,
         -20
       ],
-      "typeVersion": 1.2
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -142,7 +142,7 @@
       ],
       "webhookId": "0de4d8cd-3519-4a4a-a05b-a9c973b64141",
       "executeOnce": false,
-      "typeVersion": 2.1
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -239,7 +239,7 @@
         2860,
         60
       ],
-      "typeVersion": 4.1
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -274,7 +274,7 @@
         500,
         880
       ],
-      "typeVersion": 1.1
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -288,7 +288,7 @@
         1300,
         600
       ],
-      "typeVersion": 4.2
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -323,7 +323,7 @@
         1080,
         600
       ],
-      "typeVersion": 4.2
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -364,7 +364,7 @@
         1080,
         880
       ],
-      "typeVersion": 4.1
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -405,7 +405,7 @@
         1080,
         1040
       ],
-      "typeVersion": 4.1
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -446,7 +446,7 @@
         1080,
         1200
       ],
-      "typeVersion": 4.1
+      "typeVersion": 4
     },
     {
       "parameters": {
@@ -459,7 +459,7 @@
         1580,
         1040
       ],
-      "typeVersion": 3.1
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -500,7 +500,7 @@
         2200,
         880
       ],
-      "typeVersion": 3.1
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -530,7 +530,7 @@
         2660,
         880
       ],
-      "typeVersion": 1.8
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -553,7 +553,7 @@
         1800,
         600
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -595,7 +595,7 @@
         3040,
         880
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -624,7 +624,7 @@
         720,
         880
       ],
-      "typeVersion": 3.4
+      "typeVersion": 3
     },
     {
       "parameters": {
@@ -650,7 +650,7 @@
         1580,
         600
       ],
-      "typeVersion": 1.8
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -667,7 +667,7 @@
         2320,
         60
       ],
-      "typeVersion": 1.2
+      "typeVersion": 1
     },
     {
       "parameters": {
@@ -883,7 +883,7 @@
     },
     {
       "parameters": {
-        "content": "### Overview ###\n\nGet comprehensive stock analysis with this AI-powered workflow that provides actionable insights for your investment decisions. On a weekly basis, this workflow:\n\n- Analyzes stock data from multiple sources (Chart-img, Twelve Data API, Alphavantage)\n- Performs technical analysis using advanced indicators (RSI, MACD, Bollinger Bands, Resistance and Support Levels)\n- Scans financial news from Alpha Vantage to capture market sentiment\n- Uses OpenAI's GPT-4o to identify patterns, trends, and trading opportunities\n- Generates a fully styled, responsive HTML email (with proper RTL layout) in Hebrew\n- Sends detailed recommendations directly to your inbox\n\n**Perfect for investors, traders, and financial analysts who want data-driven stock insights - combining technical indicators with news sentiment for more informed decisions.**\n\n### Setup Instructions ###\n\n**Estimated setup time:**\n- 15 minutes\n\n**Required credentials:**\n- OpenAI API Key\n- Chart-img API Key (free tier)\n- Twelve Data API Key (free tier)\n- Alpha Vantage API Key (free tier)\n- SMTP credentials (for email delivery)\n\n**Steps:**\n\n1. Import this template into your n8n instance.\n2. Add your API keys under credentials.\n3. Configure the SMTP Email node with: Host (e.g., smtp.gmail.com), Port (465 or 587), Username (your email), Password (app-specific password or login).\n4. Activate the workflow.\n5. Fill in the Form.\n6. **Enjoy!** (Check your Spam mailbox)\n\n### Important Note: ###\nThis report is being generated automatically and does not constitute an investment recommendation. **Please consult a licensed investment advisor before making any investment decisions.**",
+        "content": "### Overview ###\n\nGet comprehensive stock analysis with this AI-powered workflow that provides actionable insights for your investment decisions. On a weekly basis, this workflow:\n\n- Analyzes stock data from multiple sources (Chart-img, Twelve Data API, Alphavantage)\n- Performs technical analysis using advanced indicators (RSI, MACD, Bollinger Bands, Resistance and Support Levels)\n- Scans financial news from Alpha Vantage to capture market sentiment\n- Uses OpenAI's GPT-4o to identify patterns, trends, and trading opportunities\n- Generates a fully styled, responsive HTML email (with proper RTL layout) in Hebrew\n- Sends detailed recommendations directly to your inbox\n\n**Perfect for investors, traders, and financial analysts who want data-driven stock insights - combining technical indicators with news sentiment for more informed decisions.**\n\n### Setup Instructions ###\n\n**Estimated setup time:**\n- 15 minutes\n\n**Required credentials:**\n- OpenAI API Key\n- Chart-img API Key (free tier)\n- Twelve Data API Key (free tier)\n- Alpha Vantage API Key (free tier)\n- SMTP credentials (for email delivery)\n\n**Steps:**\n\n1. Import this template into your n8n instance.\n2. Add your API keys under credentials.\n3. Configure the SMTP Email node with: Host (e.g., smtp.gmail.com), Port (465 or 587), Username (your email), Password (app-specific password or login).\n4. Activate the workflow.\n5. Fill in the Form.\n6. **Enjoy!** (Check your Spam mailbox)\n\n### Important Note: ###\nThis report is being generated automatically and does not constitute an investment recommendation. **Please consult a licensed investment advisor before making any investment decisions.**",
         "height": 1200,
         "width": 440,
         "color": 7
@@ -900,7 +900,7 @@
     {
       "parameters": {
         "formTitle": "Advance Stock Analysis",
-        "formDescription": "Please enter the company’s NASDAQ ticker symbol (e.g. AAPL) to get a weekly email with combined technical-and-news sentiment analysis from our AI agent",
+        "formDescription": "Please enter the company's NASDAQ ticker symbol (e.g. AAPL) to get a weekly email with combined technical-and-news sentiment analysis from our AI agent",
         "formFields": {
           "values": [
             {
@@ -934,7 +934,7 @@
         -20
       ],
       "webhookId": "79520027-d875-4ca3-a533-614bfca5e5b1",
-      "typeVersion": 2.2
+      "typeVersion": 2
     },
     {
       "parameters": {
@@ -968,7 +968,7 @@
         1280,
         -20
       ],
-      "typeVersion": 1.8
+      "typeVersion": 1
     }
   ],
   "pinData": {},

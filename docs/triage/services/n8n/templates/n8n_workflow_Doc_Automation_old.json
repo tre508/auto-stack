@@ -1,0 +1,151 @@
+{
+    "name": "Documentation Automation",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "minutesInterval": 1
+                        }
+                    ]
+                }
+            },
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "select",
+                "schema": "public",
+                "table": "agent_logs",
+                "conditions": {
+                    "timestamp": "> {{$now - 1h}}"
+                },
+                "returnFields": "*"
+            },
+            "name": "Fetch Recent Logs",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                450,
+                300
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "1",
+                    "name": "Postgres account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "functionCode": "// Group logs by event_type and agent_name\nconst groupedLogs = {};\n\nfor (const log of $input.all()) {\n  const key = `${log.agent_name}_${log.event_type}`;\n  if (!groupedLogs[key]) {\n    groupedLogs[key] = [];\n  }\n  groupedLogs[key].push(log);\n}\n\n// Generate markdown content\nlet markdown = '# Auto-Stack Activity Report\\n\\n';\nmarkdown += `Generated: ${new Date().toISOString()}\\n\\n`;\n\nfor (const [key, logs] of Object.entries(groupedLogs)) {\n  const [agent, eventType] = key.split('_');\n  markdown += `## ${agent} - ${eventType}\\n\\n`;\n  for (const log of logs) {\n    markdown += `- ${log.timestamp}: ${log.message}\\n`;\n    if (log.metadata) {\n      markdown += `  - Metadata: ${JSON.stringify(log.metadata)}\\n`;\n    }\n    if (log.status !== 'success') {\n      markdown += `  - Status: ${log.status}\\n`;\n      if (log.error) {\n        markdown += `  - Error: ${log.error}\\n`;\n      }\n    }\n  }\n  markdown += '\\n';\n}\n\nreturn { markdown };"
+            },
+            "name": "Generate Markdown",
+            "type": "n8n-nodes-base.function",
+            "typeVersion": 1,
+            "position": [
+                650,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "path": "docs/triage/reports/{{$now.format('YYYY-MM-DD_HH-mm')}}_activity_report.md",
+                "content": "={{ $json.markdown }}"
+            },
+            "name": "Write Report",
+            "type": "n8n-nodes-base.writeFile",
+            "typeVersion": 1,
+            "position": [
+                850,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "insert",
+                "schema": "public",
+                "table": "agent_logs",
+                "columns": {
+                    "agent_name": "={{ $workflow.id }}",
+                    "workflow": "={{ $workflow.id }}",
+                    "action": "documentation_update",
+                    "event_type": "report_generation",
+                    "message": "Generated activity report",
+                    "run_id": "={{ $runId }}",
+                    "status": "success",
+                    "metadata": "={{ $json }}"
+                }
+            },
+            "name": "Log Report Generation",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 1,
+            "position": [
+                1050,
+                300
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "1",
+                    "name": "Postgres account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch Recent Logs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch Recent Logs": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Markdown",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Markdown": {
+            "main": [
+                [
+                    {
+                        "node": "Write Report",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Write Report": {
+            "main": [
+                [
+                    {
+                        "node": "Log Report Generation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "tags": [],
+    "version": 2
+}

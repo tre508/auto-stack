@@ -158,7 +158,7 @@ services:
     * `embedder`: Provider `openai`, model `BAAI/bge-base-en-v1.5`. This request will be proxied by the controller.
     * `history_db_path`: e.g., `/data/mem0_history.db` (persisted in `mem0_data_auto` volume).
   * **`.env` (root project) for `mem0_auto` service:**
-    * `OPENAI_API_KEY`: Your **Hugging Face Token** (e.g., `hf_YourToken...`).
+    * `OPENAI_API_KEY`: Your **Hugging Face Token** (e.g., `<HF_TOKEN>`).
     * `OPENAI_BASE_URL`: Points to the controller proxy (e.g., `http://controller_auto:5050/mem0_openai_proxy/v1`).
   * **`.env` (root project) for `controller_auto` service (related to Mem0 proxying):**
     * `HF_SPACE_EMBEDDER_ENDPOINT`: URL of your HF Space embedder (e.g., `https://GleshenCOCO-bge-embedding-api.hf.space/v1/embeddings`).

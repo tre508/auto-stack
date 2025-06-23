@@ -14,7 +14,7 @@
       },
       "name": "Run Every 6 Hours",
       "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.1,
+      "typeVersion": 1,
       "position": [
         800,
         300
@@ -57,5 +57,6 @@
     "Docs",
     "Sync",
     "Git"
-  ]
+  ],
+  "version": 2
 }
