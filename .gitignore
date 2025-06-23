@@ -21,6 +21,9 @@ ehthumbs.db
 *.old
 *.log
 *.pid
+*.backup.*
+*.backup
+*backup*
 
 # Secrets - Local environment variables
 .env
