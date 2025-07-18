@@ -42,7 +42,7 @@ The primary issues reported by Pylance/Cursor align with environment and depende
 *   **Controller Dependencies:** `controller/requirements.txt` lists `fastapi`, `uvicorn[standard]`, `httpx`. It does **not** list or use `mem0ai`.
 *   **Missing Dependencies for Extras (`mem0/cookbooks`):**
     *   The `mem0/cookbooks/helper/mem0_teachability.py` script imports `autogen.agentchat.*` and likely uses `termcolor` (as per `Mem0_IDE_Diagnostic_Report.md`).
-    *   Neither `pyautogen` nor `termcolor` are listed as dependencies in `mem0/pyproject.toml`.
+    *   Neither `ag2` nor `termcolor` are listed as dependencies in `mem0/pyproject.toml`.
 
 ---
 
@@ -68,7 +68,7 @@ The primary issues reported by Pylance/Cursor align with environment and depende
 ## 5. Failing File Paths and Class Names
 
 *   **Primary Failing Import:** `from mem0 import Memory` (and `MemoryClient`, `AsyncMemory`, etc.) fails due to environment/installation issues.
-*   **Cookbook-Specific Failures:** Imports within `mem0/cookbooks/helper/mem0_teachability.py` like `from autogen.agentchat.assistant_agent import ConversableAgent` fail due to missing `pyautogen`.
+*   **Cookbook-Specific Failures:** Imports within `mem0/cookbooks/helper/mem0_teachability.py` like `from autogen.agentchat.assistant_agent import ConversableAgent` fail due to missing `ag2`.
 *   **Internal Ambiguity:** `MemoryGraph` class in `mem0/mem0/memory/main.py` due to dual import sources (`memgraph_memory.py` vs. `graph_memory.py`).
 
 ---
@@ -90,11 +90,11 @@ The primary issues reported by Pylance/Cursor align with environment and depende
 ### B. Address Missing Dependencies for Extras
 
 1.  **For `mem0/cookbooks/` and Examples:**
-    *   Decide if `pyautogen` and `termcolor` should be:
+    *   Decide if `ag2` and `termcolor` should be:
         *   Added to `mem0/pyproject.toml` under `[tool.poetry.group.dev.dependencies]` or as an "extra" (e.g., `[tool.poetry.extras]
-cookbook = ["pyautogen", "termcolor"]`). Then install via `pip install -e .[cookbook]`.
+cookbook = ["ag2", "termcolor"]`). Then install via `pip install -e .[cookbook]`.
         *   Or, provide separate `requirements.txt` for cookbooks if they are to be run in isolated environments.
-    *   Install them into the `.venv`: `pip install pyautogen termcolor`
+    *   Install them into the `.venv`: `pip install ag2 termcolor`
 
 ### C. Refactor `mem0ai` Internal Code
 
@@ -118,9 +118,9 @@ cookbook = ["pyautogen", "termcolor"]`). Then install via `pip install -e .[cook
 
 This section outlines the proposed solutions for item B (Address Missing Dependencies for Extras) and C-1 (Resolve `MemoryGraph` Ambiguity) from the "Recommended Remediation Steps".
 
-### B. Address Missing Dependencies for Extras (`pyautogen`, `termcolor`)
+### B. Address Missing Dependencies for Extras (`ag2`, `termcolor`)
 
-**Context:** The `mem0/cookbooks/` and potentially some examples require `pyautogen` and `termcolor`, which are not core dependencies of `mem0ai`.
+**Context:** The `mem0/cookbooks/` and potentially some examples require `ag2` and `termcolor`, which are not core dependencies of `mem0ai`.
 
 **Proposed Solution:**
 
@@ -128,7 +128,7 @@ This section outlines the proposed solutions for item B (Address Missing Depende
     *   **Example for `pyproject.toml` (using extras):**
         ```toml
         [tool.poetry.extras]
-        cookbook = ["pyautogen", "termcolor"]
+        cookbook = ["ag2", "termcolor"]
         ```
     *   **Installation:** Users wanting to run cookbooks would then install `mem0ai` with the extra:
         ```bash
@@ -170,7 +170,7 @@ This section outlines the proposed solutions for item B (Address Missing Depende
 ## 8. Checklist of Code Modules/Areas Requiring Attention
 
 - [ ] **IDE/`.venv` Configuration:** Ensure `mem0ai` is installed (editable mode recommended) and Cursor uses the correct interpreter. (High Priority)
-- [ ] **`mem0/cookbooks/` Dependencies:** Add `pyautogen`, `termcolor` to dev/optional dependencies and install.
+- [ ] **`mem0/cookbooks/` Dependencies:** Add `ag2`, `termcolor` to dev/optional dependencies and install.
 - [ ] **`mem0/mem0/memory/main.py`:** Resolve dual `MemoryGraph` imports. (High Priority)
 - [ ] **`mem0/mem0/memory/memgraph_memory.py` vs. `graph_memory.py`:** Investigate and consolidate/deprecate one. (High Priority)
 - [ ] **`mem0/mem0/memory/main.py` (methods with deprecation warnings):** Accelerate migration to new data formats.
