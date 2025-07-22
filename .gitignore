@@ -153,3 +153,8 @@ docs/**/README_gen.md # If README_gen.md are specifically generated
 # Example:
 # !important.log
 # !.env.example
+
+# ==============================================================================
+# Documentation Archive - Historical content, may contain sensitive data
+# ==============================================================================
+docs/archive/
