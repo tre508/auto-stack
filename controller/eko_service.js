@@ -35,9 +35,27 @@ const port = process.env.EKO_SERVICE_PORT || 3001;
 
 app.use(express.json());
 
-// Health check endpoint
+// Health check endpoints
 app.get('/status', (req, res) => {
   res.json({ status: 'Eko service is running' });
+});
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    service: 'eko_service',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ 
+    status: 'healthy',
+    service: 'eko_service',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 // Endpoint to run Eko workflows

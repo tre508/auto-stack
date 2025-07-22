@@ -105,7 +105,7 @@ export const triggerBacktest = ({
           content: {
             error: errorMessage,
             strategy: strategy,
-            timerange: timerange,
+            timerange: timerange || 'default',
           },
         });
 

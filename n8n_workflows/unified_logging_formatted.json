@@ -1,0 +1,93 @@
+[
+    {
+        "createdAt": "2025-06-01T19:09:12.602Z",
+        "updatedAt": "2025-06-01T21:20:25.000Z",
+        "id": "knCkuu3VRNYZbSTa",
+        "name": "Unified Logging",
+        "active": false,
+        "isArchived": false,
+        "nodes": [
+            {
+                "parameters": {
+                    "inputSource": "jsonExample",
+                    "jsonExample": "{\n  \"agent_name\": \"ExampleAgentName\",\n  \"calling_workflow_name\": \"NameOfWorkflowThatCalledThis\",\n  \"action\": \"Performed an action\",\n  \"event_type\": \"log_event\",\n  \"message\": \"This is the main log message about the action.\",\n  \"run_id\": \"run-abc-123\",\n  \"status\": \"success\",\n  \"error\": null,\n  \"metadata\": {\n    \"key1\": \"value1\",\n    \"some_metric\": 123,\n    \"additional_info\": \"more data\"\n  }\n}"
+                },
+                "type": "n8n-nodes-base.executeWorkflowTrigger",
+                "typeVersion": 1.1,
+                "position": [
+                    -180,
+                    -20
+                ],
+                "id": "7d0cb74f-7ef6-42d3-97be-b21e00a99eb7",
+                "name": "Subworkflow Trigger"
+            },
+            {
+                "parameters": {
+                    "schema": {
+                        "__rl": true,
+                        "mode": "list",
+                        "value": "public"
+                    },
+                    "table": {
+                        "__rl": true,
+                        "value": "agent_logs",
+                        "mode": "list",
+                        "cachedResultName": "agent_logs"
+                    },
+                    "columns": {
+                        "mappingMode": "defineBelow",
+                        "value": {
+                            "agent_name": "={{$json.agent_name}}",
+                            "event_type": "={{$json.event_type}}",
+                            "run_id": "={{$json.run_id}}",
+                            "message": "={{$json.message}}",
+                            "status": "={{$json.status}}",
+                            "metadata": "={{ $json.metadata }}",
+                            "workflow": "={{$json.calling_workflow_name}}",
+                            "error": "={{$json.error}}",
+                            "action": "={{$json.action}}"
+                        }
+                    }
+                },
+                "type": "n8n-nodes-base.postgres",
+                "typeVersion": 2.6,
+                "position": [
+                    220,
+                    0
+                ],
+                "id": "1496e418-5d83-4385-955c-1733f381e4a0",
+                "name": "Postgres",
+                "credentials": {
+                    "postgres": {
+                        "id": "RRJmkcRaHXZBMhKB",
+                        "name": "Postgres account"
+                    }
+                }
+            }
+        ],
+        "connections": {
+            "Subworkflow Trigger": {
+                "main": [
+                    [
+                        {
+                            "node": "Postgres",
+                            "type": "main",
+                            "index": 0
+                        }
+                    ]
+                ]
+            }
+        },
+        "settings": {
+            "executionOrder": "v1"
+        },
+        "staticData": null,
+        "meta": {
+            "templateCredsSetupCompleted": true
+        },
+        "pinData": {},
+        "versionId": "c0780ee5-504c-482f-b60a-da1a9011188a",
+        "triggerCount": 0,
+        "tags": []
+    }
+]

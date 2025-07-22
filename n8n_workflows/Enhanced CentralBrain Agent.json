@@ -1,0 +1,1138 @@
+{
+  "name": "Enhanced CentralBrain Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "enhanced-central-brain",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "351b2712-8d1e-4202-a05e-505cb39cd1a9",
+      "name": "Enhanced Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        -60
+      ],
+      "webhookId": "enhanced-central-brain-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced input validation and preprocessing\nconst input = $input.first().json;\n\n// Log incoming request\nconsole.log('CentralBrain received:', JSON.stringify(input, null, 2));\n\n// Validate required fields\nif (!input.chatInput && !input.command) {\n  throw new Error('Missing required field: chatInput or command');\n}\n\n// Extract and clean input\nconst chatInput = input.chatInput || input.command || '';\nconst userId = input.userId || 'anonymous';\nconst sessionId = input.sessionId || Date.now().toString();\nconst timestamp = new Date().toISOString();\n\n// Detect command type\nlet commandType = 'general';\nif (chatInput.startsWith('freqtrade:')) {\n  commandType = 'freqtrade';\n} else if (chatInput.startsWith('docs:')) {\n  commandType = 'documentation';\n} else if (chatInput.startsWith('market:')) {\n  commandType = 'market';\n} else if (chatInput.startsWith('notification:')) {\n  commandType = 'notification';\n}\n\nreturn {\n  originalInput: input,\n  chatInput,\n  userId,\n  sessionId,\n  timestamp,\n  commandType,\n  processed: true\n};"
+      },
+      "id": "1f2e2dab-6e21-422d-ae91-a80cd1c59934",
+      "name": "Enhanced Input Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1980,
+        -60
+      ],
+      "alwaysOutputData": true,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists"
+              },
+              "id": "098939f8-16ad-4f12-8b3f-7389d1ac6d5e"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "adcdc452-d8a4-4e6e-89e3-f1394b1556b9",
+      "name": "Check for Processing Errors",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1720,
+        -40
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "047e0a20-39c4-4d03-9b00-8ce19a042d54",
+      "name": "Error Response Handler",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -1060,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commandType }}",
+                    "rightValue": "freqtrade",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "freqtrade"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commandType }}",
+                    "rightValue": "documentation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "docs"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commandType }}",
+                    "rightValue": "market",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "market"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.commandType }}",
+                    "rightValue": "notification",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "notification"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "general"
+        }
+      },
+      "id": "e3072f9f-d858-4855-829d-25ffabe83362",
+      "name": "Enhanced Command Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -1340,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Freqtrade command processor with enhanced parsing\nconst input = $input.first().json;\nconst chatInput = input.chatInput || '';\n\n// Extract freqtrade command\nconst command = chatInput.replace('freqtrade:', '').trim();\n\n// Parse command type and parameters\nlet endpoint = '/api/v1/status';\nlet method = 'GET';\nlet body = null;\n\nif (command.includes('status')) {\n  endpoint = '/api/v1/status';\n} else if (command.includes('balance')) {\n  endpoint = '/api/v1/balance';\n} else if (command.includes('profit')) {\n  endpoint = '/api/v1/profit';\n} else if (command.includes('trades')) {\n  endpoint = '/api/v1/trades';\n} else if (command.includes('stop')) {\n  endpoint = '/api/v1/stop';\n  method = 'POST';\n}\n\nreturn {\n  ...input,\n  freqtrade: {\n    endpoint,\n    method,\n    body,\n    command: command\n  }\n};"
+      },
+      "id": "415bb70c-0247-4788-8d32-f32301e3c245",
+      "name": "Freqtrade Command Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -260
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:8080{{ $json.freqtrade.endpoint }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "id": "dbe5a676-e638-4383-9332-7606273cd0e5",
+      "name": "Enhanced Freqtrade API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -760,
+        -340
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/docs/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.chatInput.replace('docs:', '').trim() }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "7acb5dc7-2b80-441c-a6df-191c4a3fc7ae",
+      "name": "Documentation Search API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -840,
+        -180
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/market/analysis",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbol",
+              "value": "={{ $json.chatInput.replace('market:', '').trim() }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "b5b38008-990f-4524-8861-f957ff8fd463",
+      "name": "Market Analysis API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -900,
+        20
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "url": "=http://localhost:3001/api/notifications/send",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"message\": $json.chatInput.replace('notification:', '').trim(), \"userId\": $json.userId, \"type\": \"info\" } }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          },
+          "timeout": 5000
+        }
+      },
+      "id": "28bb20be-c8b0-42f5-988f-c7cdf9c68b41",
+      "name": "Notification API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -980,
+        180
+      ],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $json.sessionId }}",
+        "contextWindowLength": 10
+      },
+      "id": "88fc7e94-6434-4981-835b-ead79625d277",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [
+        -1620,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced response processor with error handling\nconst responses = $input.all();\nlet finalResponse = {\n  status: 'success',\n  timestamp: new Date().toISOString(),\n  sessionId: responses[0]?.json?.sessionId || 'unknown',\n  userId: responses[0]?.json?.userId || 'unknown'\n};\n\n// Process each response type\nfor (const response of responses) {\n  const json = response.json;\n  \n  // Handle API errors\n  if (json.error) {\n    finalResponse.status = 'partial_error';\n    finalResponse.errors = finalResponse.errors || [];\n    finalResponse.errors.push({\n      source: response.node || 'unknown',\n      error: json.error.message || json.error,\n      timestamp: new Date().toISOString()\n    });\n    continue;\n  }\n  \n  // Handle successful responses\n  if (json.freqtrade) {\n    finalResponse.freqtrade = json;\n  } else if (json.docs || json.documentation) {\n    finalResponse.documentation = json;\n  } else if (json.market) {\n    finalResponse.market = json;\n  } else if (json.notification) {\n    finalResponse.notification = json;\n  } else if (json.chatInput) {\n    finalResponse.general = json;\n  }\n}\n\n// Add summary message\nif (finalResponse.status === 'success') {\n  finalResponse.message = 'Request processed successfully';\n} else {\n  finalResponse.message = 'Request processed with some errors. Check errors array for details.';\n}\n\nreturn finalResponse;"
+      },
+      "id": "0ab8faa5-0d6b-49e1-94a2-b635796b44df",
+      "name": "Enhanced Response Processor",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        -40
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "centralbrain_logs",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "user_id": "={{ $json.userId }}",
+            "session_id": "={{ $json.sessionId }}",
+            "command": "={{ $json.chatInput }}",
+            "command_type": "={{ $('Enhanced Input Processor').first().json.commandType }}",
+            "success": "={{ $json.status === 'success' }}",
+            "response_data": "={{ $json }}",
+            "error_data": "={{ $json.errors || null }}",
+            "execution_time_ms": "={{ Date.now() - new Date($('Enhanced Input Processor').first().json.timestamp).getTime() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "command",
+              "displayName": "command",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "command_type",
+              "displayName": "command_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "success",
+              "displayName": "success",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "response_data",
+              "displayName": "response_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "error_data",
+              "displayName": "error_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "execution_time_ms",
+              "displayName": "execution_time_ms",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ff5b1852-27fc-472c-8697-6b8b2b1e44b8",
+      "name": "Enhanced Logging",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -280,
+        -40
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      },
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "62002b94-a51f-42ad-8fb8-04b6afe4f95a",
+      "name": "Send Enhanced Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "systemMessage": "You are CentralBrain, an intelligent AI agent for the auto-stack platform. You help with freqtrade operations, documentation queries, market analysis, and system automation.\n\nIMPORTANT: You must ALWAYS respond with structured JSON output containing:\n- response: Your main answer/content\n- action: The type of action (answer/search/calculate/store/retrieve)\n- confidence: Your confidence level (0-1)\n- metadata: Additional context with timestamp and source\n\nAvailable tools:\n- Calculator: For mathematical operations\n- HTTP Request: For API calls and web requests\n- Vector Store: For searching and storing documents\n- PostgreSQL: For data storage and retrieval\n\nWhen users ask about:\n- freqtrade: Use trading-related tools and provide market insights\n- docs: Search the knowledge base and provide documentation\n- calculations: Use the calculator tool\n- data storage: Use PostgreSQL or vector store as appropriate\n\nAlways be helpful, accurate, and provide structured responses.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -1700,
+        200
+      ],
+      "id": "7500b534-2917-4d99-b291-214007973b09",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "schemaType": "fromJson",
+        "jsonSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"response\": {\n      \"type\": \"string\",\n      \"description\": \"The main response content\"\n    },\n    \"action\": {\n      \"type\": \"string\",\n      \"description\": \"Action taken or recommended\",\n      \"enum\": [\"answer\", \"search\", \"calculate\", \"store\", \"retrieve\"]\n    },\n    \"confidence\": {\n      \"type\": \"number\",\n      \"description\": \"Confidence level from 0 to 1\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    },\n    \"metadata\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"timestamp\": {\n          \"type\": \"string\",\n          \"description\": \"Response timestamp\"\n        },\n        \"source\": {\n          \"type\": \"string\",\n          \"description\": \"Information source\"\n        }\n      }\n    }\n  },\n  \"required\": [\"response\", \"action\"]\n}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1340,
+        460
+      ],
+      "id": "392dcbf0-8d98-4115-a02a-41884573880f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        -1480,
+        440
+      ],
+      "id": "ab5158e8-19b4-40e3-9809-5b3e3fa9372a",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1720,
+        600
+      ],
+      "id": "8e6119b9-54bd-450f-a40d-b83780e19d52",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "ziqpyYKMDX1tJ56x",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Make HTTP requests to external APIs and services for data retrieval and integration",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -1360,
+        620
+      ],
+      "id": "edb6088d-1047-45a0-81d9-29302ace10a0",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "description": "Insert document data into the n8n_vectors table for storage and retrieval",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "n8n_vectors",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "content": "={{ $json.content || $json.pageContent || $json.chatInput }}",
+            "metadata": "={{ $json.metadata || {} }}",
+            "embedding": "={{ $json.embedding || null }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        -1520,
+        580
+      ],
+      "id": "2a87bc4f-04d3-483e-a6d1-ccd450106e7f",
+      "name": "Insert rows in a table in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableName": "n8n_vectors",
+        "description": "Vector store for retrieving documents and knowledge base content for AI agent responses",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -2080,
+        620
+      ],
+      "id": "c49414e5-54dc-43c1-aa6b-7133dff9f4ac",
+      "name": "retrieve docs Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "tableName": "n8n_vectors",
+        "description": "Search and retrieve relevant documents from the knowledge base using vector similarity",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -2220,
+        480
+      ],
+      "id": "f843d818-34b4-478c-8301-15e4463b2f7e",
+      "name": "Postgres PGVector Store",
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        -1940,
+        480
+      ],
+      "id": "acfaff30-159b-4843-ae42-19a1ba554700",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -2300,
+        640
+      ],
+      "id": "4de7beda-09ab-4601-a455-50db6face430",
+      "name": "Embeddings HuggingFace Inference",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "75SQAZjBBBocdyz5",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonMode": "defineBelow",
+        "jsonData": "={{ { \"pageContent\": $json.chatInput || $json.content || \"Sample document content\", \"metadata\": { \"source\": \"user_input\", \"timestamp\": new Date().toISOString(), \"userId\": $json.userId || \"anonymous\", \"sessionId\": $json.sessionId || \"default\" } } }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -2160,
+        340
+      ],
+      "id": "a3a94e30-abd1-46f9-b11f-6f7244d9c543",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": "n8n_vectors",
+        "description": "Insert documents and their vector embeddings into the knowledge base",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePGVector",
+      "typeVersion": 1.3,
+      "position": [
+        -2260,
+        200
+      ],
+      "id": "740d0cba-40b5-418d-ba5d-aa299fd104df",
+      "name": "Insert Docs",
+      "credentials": {
+        "postgres": {
+          "id": "RRJmkcRaHXZBMhKB",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "allowFileUploads": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1900,
+        200
+      ],
+      "id": "5a32ed8e-7b54-4f25-89da-35398953e17e",
+      "name": "When chat message received",
+      "webhookId": "dfc96149-1ab8-448a-aa16-fa992020ba88"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Enhanced Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Input Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Input Processor": {
+      "main": [
+        [
+          {
+            "node": "Check for Processing Errors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Processing Errors": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Command Router",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Command Router": {
+      "main": [
+        [
+          {
+            "node": "Freqtrade Command Processor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Documentation Search API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Market Analysis API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notification API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Freqtrade Command Processor": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Freqtrade API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Freqtrade API Call": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Documentation Search API": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Analysis API": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification API": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Response Handler": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Response Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Response Processor": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Logging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Logging": {
+      "main": [
+        [
+          {
+            "node": "Send Enhanced Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Command Router",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Enhanced Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Error Response Handler",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres PGVector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retrieve docs Postgres PGVector Store": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings HuggingFace Inference": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "retrieve docs Postgres PGVector Store",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Insert Docs",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Docs",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Docs": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "15eea9ef-3f5f-427c-af53-5b88b801a581",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cdc797372b4e55e3ab2507a143f0ba58519bb2cbe9c89bdcbeb072065c3546c"
+  },
+  "id": "ffjLYM8CnvKz9rOA",
+  "tags": []
+}

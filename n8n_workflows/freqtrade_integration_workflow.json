@@ -1,0 +1,457 @@
+{
+    "name": "Freqtrade Integration Workflow",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "freqtrade-integration",
+                "responseMode": "lastNode",
+                "options": {
+                    "allowedOrigins": "*"
+                }
+            },
+            "id": "freqtrade-webhook-001",
+            "name": "Freqtrade Webhook Trigger",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                -1800,
+                400
+            ],
+            "webhookId": "freqtrade-integration-webhook"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Freqtrade command parser and validator\nconst input = $input.first().json;\nconst command = input.command || input.chatInput || '';\n\n// Validate input\nif (!command) {\n  throw new Error('No command provided');\n}\n\n// Parse command structure\nconst parts = command.trim().split(/\\s+/);\nconst action = parts[0].toLowerCase();\nconst subCommand = parts[1]?.toLowerCase();\n\n// Command categories\nconst validActions = {\n  'status': ['bot', 'balance', 'trades', 'performance'],\n  'backtest': ['run', 'analyze', 'optimize'],\n  'strategy': ['list', 'test', 'validate', 'optimize'],\n  'trade': ['start', 'stop', 'pause', 'resume'],\n  'config': ['get', 'set', 'validate'],\n  'market': ['analyze', 'data', 'signals'],\n  'portfolio': ['balance', 'positions', 'pnl', 'history']\n};\n\n// Validate action\nif (!validActions[action]) {\n  throw new Error(`Invalid action: ${action}. Valid actions: ${Object.keys(validActions).join(', ')}`);\n}\n\n// Validate sub-command\nif (subCommand && !validActions[action].includes(subCommand)) {\n  throw new Error(`Invalid sub-command: ${subCommand} for action: ${action}. Valid sub-commands: ${validActions[action].join(', ')}`);\n}\n\n// Parse parameters\nconst params = {};\nfor (let i = 2; i < parts.length; i += 2) {\n  if (parts[i] && parts[i + 1]) {\n    const key = parts[i].replace(/^--/, '');\n    params[key] = parts[i + 1];\n  }\n}\n\n// Set defaults based on action\nconst defaults = {\n  'backtest': {\n    strategy: 'DefaultStrategy',\n    timeframe: '1h',\n    timerange: '20231201-20240101',\n    pair: 'BTC/USDT'\n  },\n  'strategy': {\n    timeframe: '1h',\n    pair: 'BTC/USDT'\n  },\n  'market': {\n    timeframe: '1h',\n    limit: 100\n  }\n};\n\n// Apply defaults\nif (defaults[action]) {\n  Object.keys(defaults[action]).forEach(key => {\n    if (!params[key]) {\n      params[key] = defaults[action][key];\n    }\n  });\n}\n\nreturn {\n  originalInput: input,\n  parsedCommand: {\n    action,\n    subCommand,\n    params,\n    fullCommand: command\n  },\n  timestamp: new Date().toISOString(),\n  userId: input.userId || 'system',\n  sessionId: input.sessionId || Date.now().toString()\n};"
+            },
+            "id": "command-parser-001",
+            "name": "Freqtrade Command Parser",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -1600,
+                400
+            ],
+            "alwaysOutputData": true,
+            "continueOnFail": true,
+            "onError": "continueErrorOutput"
+        },
+        {
+            "parameters": {
+                "rules": {
+                    "values": [
+                        {
+                            "conditions": {
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{ $json.parsedCommand.action }}",
+                                        "rightValue": "status",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "equals"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "status"
+                        },
+                        {
+                            "conditions": {
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{ $json.parsedCommand.action }}",
+                                        "rightValue": "backtest",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "equals"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "backtest"
+                        },
+                        {
+                            "conditions": {
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{ $json.parsedCommand.action }}",
+                                        "rightValue": "strategy",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "equals"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "strategy"
+                        },
+                        {
+                            "conditions": {
+                                "conditions": [
+                                    {
+                                        "leftValue": "={{ $json.parsedCommand.action }}",
+                                        "rightValue": "trade",
+                                        "operator": {
+                                            "type": "string",
+                                            "operation": "equals"
+                                        }
+                                    }
+                                ]
+                            },
+                            "renameOutput": true,
+                            "outputKey": "trade"
+                        }
+                    ]
+                },
+                "options": {
+                    "fallbackOutput": "general"
+                }
+            },
+            "id": "action-router-001",
+            "name": "Freqtrade Action Router",
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 3,
+            "position": [
+                -1400,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "={{ $env.FREQTRADE_URL || 'http://localhost:8080' }}/api/v1/status",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.FREQTRADE_API_KEY || 'freqtrade-key' }}"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "status-api-001",
+            "name": "Get Status",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                -1200,
+                200
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $env.FREQTRADE_URL || 'http://localhost:8080' }}/api/v1/backtest",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.FREQTRADE_API_KEY || 'freqtrade-key' }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ $json.parsedCommand.params }}",
+                "options": {
+                    "timeout": 60000
+                }
+            },
+            "id": "backtest-api-001",
+            "name": "Run Backtest",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                -1200,
+                400
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "={{ $env.FREQTRADE_URL || 'http://localhost:8080' }}/api/v1/strategies",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.FREQTRADE_API_KEY || 'freqtrade-key' }}"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "strategy-api-001",
+            "name": "Get Strategies",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                -1200,
+                600
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $env.FREQTRADE_URL || 'http://localhost:8080' }}/api/v1/{{ $json.parsedCommand.subCommand }}",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Authorization",
+                            "value": "Bearer {{ $env.FREQTRADE_API_KEY || 'freqtrade-key' }}"
+                        },
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ $json.parsedCommand.params }}",
+                "options": {
+                    "timeout": 10000
+                }
+            },
+            "id": "trade-api-001",
+            "name": "Execute Trade Command",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                -1200,
+                800
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "// Response analysis and recommendation engine\nconst responses = $input.all();\nlet analysisResult = {\n  success: false,\n  action: '',\n  data: null,\n  analysis: '',\n  recommendations: [],\n  timestamp: new Date().toISOString()\n};\n\n// Process each response type\nfor (const response of responses) {\n  const json = response.json;\n  \n  if (json.error) {\n    analysisResult.success = false;\n    analysisResult.error = json.error;\n    continue;\n  }\n  \n  // Determine action type from node name or data structure\n  if (response.node?.includes('Status') || json.status) {\n    analysisResult.action = 'status';\n    analysisResult.data = json;\n    analysisResult.analysis = analyzeStatus(json);\n    analysisResult.recommendations = generateStatusRecommendations(json);\n    analysisResult.success = true;\n  } else if (response.node?.includes('Backtest') || json.backtest_result) {\n    analysisResult.action = 'backtest';\n    analysisResult.data = json;\n    analysisResult.analysis = analyzeBacktest(json);\n    analysisResult.recommendations = generateBacktestRecommendations(json);\n    analysisResult.success = true;\n  } else if (response.node?.includes('Strategies') || json.strategies) {\n    analysisResult.action = 'strategy';\n    analysisResult.data = json;\n    analysisResult.analysis = analyzeStrategies(json);\n    analysisResult.recommendations = generateStrategyRecommendations(json);\n    analysisResult.success = true;\n  } else if (response.node?.includes('Trade') || json.trades) {\n    analysisResult.action = 'trade';\n    analysisResult.data = json;\n    analysisResult.analysis = analyzeTrades(json);\n    analysisResult.recommendations = generateTradeRecommendations(json);\n    analysisResult.success = true;\n  }\n}\n\nreturn analysisResult;\n\n// Analysis functions\nfunction analyzeStatus(data) {\n  if (!data.status) return 'No status data available';\n  return `Bot is ${data.status}. Current balance: ${data.balance || 'Unknown'}. Active trades: ${data.open_trades || 0}.`;\n}\n\nfunction analyzeBacktest(data) {\n  if (!data.backtest_result) return 'No backtest data available';\n  const result = data.backtest_result;\n  return `Backtest completed. Total trades: ${result.total_trades || 0}. Win rate: ${result.win_rate || 0}%. Profit: ${result.profit_total || 0}.`;\n}\n\nfunction analyzeStrategies(data) {\n  if (!data.strategies) return 'No strategy data available';\n  return `Found ${data.strategies.length} strategies: ${data.strategies.slice(0, 3).join(', ')}${data.strategies.length > 3 ? '...' : ''}.`;\n}\n\nfunction analyzeTrades(data) {\n  if (!data.trades) return 'No trade data available';\n  return `Trade operation completed. Current trades: ${data.trades.length || 0}.`;\n}\n\n// Recommendation functions\nfunction generateStatusRecommendations(data) {\n  const recommendations = [];\n  if (data.status === 'stopped') {\n    recommendations.push('Consider starting the bot if market conditions are favorable');\n  }\n  if (data.balance && parseFloat(data.balance) < 100) {\n    recommendations.push('Low balance detected - consider adding funds');\n  }\n  return recommendations;\n}\n\nfunction generateBacktestRecommendations(data) {\n  const recommendations = [];\n  const result = data.backtest_result;\n  if (result && result.win_rate < 50) {\n    recommendations.push('Low win rate - consider optimizing strategy parameters');\n  }\n  if (result && result.profit_total < 0) {\n    recommendations.push('Negative profit - strategy needs significant improvement');\n  }\n  return recommendations;\n}\n\nfunction generateStrategyRecommendations(data) {\n  const recommendations = [];\n  if (data.strategies && data.strategies.length > 10) {\n    recommendations.push('Many strategies available - consider testing top performers');\n  }\n  recommendations.push('Review strategy performance metrics before selection');\n  return recommendations;\n}\n\nfunction generateTradeRecommendations(data) {\n  const recommendations = [];\n  if (data.trades && data.trades.length > 5) {\n    recommendations.push('Multiple active trades - monitor risk exposure');\n  }\n  recommendations.push('Review trade performance and adjust if needed');\n  return recommendations;\n}"
+            },
+            "id": "response-analyzer-001",
+            "name": "Response Analyzer",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -800,
+                400
+            ],
+            "alwaysOutputData": true
+        },
+        {
+            "parameters": {
+                "schema": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "public"
+                },
+                "table": {
+                    "__rl": true,
+                    "value": "freqtrade_logs",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "user_id": "={{ $('Freqtrade Command Parser').first().json.userId }}",
+                        "session_id": "={{ $('Freqtrade Command Parser').first().json.sessionId }}",
+                        "command": "={{ $('Freqtrade Command Parser').first().json.parsedCommand.fullCommand }}",
+                        "action": "={{ $json.action }}",
+                        "success": "={{ $json.success }}",
+                        "analysis": "={{ $json.analysis }}",
+                        "recommendations": "={{ JSON.stringify($json.recommendations) }}",
+                        "raw_data": "={{ JSON.stringify($json.data) }}",
+                        "error": "={{ $json.error ? JSON.stringify($json.error) : null }}"
+                    }
+                },
+                "options": {}
+            },
+            "id": "freqtrade-logging-001",
+            "name": "Log Freqtrade Activity",
+            "type": "n8n-nodes-base.postgres",
+            "typeVersion": 2.6,
+            "position": [
+                -600,
+                400
+            ],
+            "credentials": {
+                "postgres": {
+                    "id": "POSTGRES_CREDENTIAL_ID",
+                    "name": "Postgres account"
+                }
+            },
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "freqtrade-response-001",
+            "name": "Send Freqtrade Response",
+            "type": "n8n-nodes-base.respondToWebhook",
+            "typeVersion": 1,
+            "position": [
+                -400,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "Freqtrade Webhook Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Freqtrade Command Parser",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Freqtrade Command Parser": {
+            "main": [
+                [
+                    {
+                        "node": "Freqtrade Action Router",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Freqtrade Action Router": {
+            "main": [
+                [
+                    {
+                        "node": "Get Status",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Run Backtest",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Get Strategies",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Execute Trade Command",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Response Analyzer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Status": {
+            "main": [
+                [
+                    {
+                        "node": "Response Analyzer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Run Backtest": {
+            "main": [
+                [
+                    {
+                        "node": "Response Analyzer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Strategies": {
+            "main": [
+                [
+                    {
+                        "node": "Response Analyzer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Execute Trade Command": {
+            "main": [
+                [
+                    {
+                        "node": "Response Analyzer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Response Analyzer": {
+            "main": [
+                [
+                    {
+                        "node": "Log Freqtrade Activity",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log Freqtrade Activity": {
+            "main": [
+                [
+                    {
+                        "node": "Send Freqtrade Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": {
+        "templateCredsSetupCompleted": false
+    },
+    "pinData": {},
+    "versionId": "freqtrade-integration-v1",
+    "triggerCount": 0,
+    "tags": []
+}

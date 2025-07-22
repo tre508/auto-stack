@@ -1,0 +1,30 @@
+{
+    "test_run": {
+        "timestamp": "2025-06-27T21:02:18+02:00",
+        "duration": "6s",
+        "tester": "AI Agent MCP Tools"
+    },
+    "environment": {
+        "n8n_container_status": "Up 56 minutes (unhealthy)",
+        "workflows_count": 5,
+        "database_accessible": true
+    },
+    "workflows": {
+        "enhanced_centralbrain": {
+            "imported": true,
+            "webhook_path": "/webhook/enhanced-central-brain",
+            "status": "requires_activation"
+        },
+        "freqtrade_integration": {
+            "imported": true,
+            "webhook_path": "/webhook/freqtrade-integration", 
+            "status": "requires_activation"
+        }
+    },
+    "recommendations": [
+        "Activate workflows through n8n UI to enable webhook endpoints",
+        "Configure PostgreSQL credentials for logging functionality",
+        "Set up Freqtrade API credentials for integration testing",
+        "Test workflows with real data after activation"
+    ]
+}

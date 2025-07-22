@@ -68,6 +68,8 @@ function getStreamContext() {
   return globalStreamContext;
 }
 
+
+
 async function handleSlashCommands(message: string): Promise<{ message: string } | null> {
   const trimmedMessage = message.trim();
   
@@ -287,95 +289,56 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
-    // Refactored to use direct fetch and OpenAIStream
-    const stream = await (async () => {
-      // Log environment variables just before fetch call
-      console.log('[Chat API POST Handler] Environment Variables for direct fetch:');
-      console.log(`[Chat API POST Handler]   OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? 'Exists' : 'MISSING!'}`);
-      console.log(`[Chat API POST Handler]   OPENAI_BASE_URL: ${process.env.OPENAI_BASE_URL}`);
-      console.log(`[Chat API POST Handler]   selectedChatModel (raw from client): ${selectedChatModel}`);
+    // Use AI SDK's streamText with proper provider integration
+    const result = await (async () => {
+      // Import streamText from ai
+      const { streamText } = await import('ai');
 
-      // Determine the actual model ID to use for the API call
-      let apiModelId: string = selectedChatModel; // Explicitly type as string
-      if (selectedChatModel === 'chat-model' || selectedChatModel === 'chat-model-reasoning' || selectedChatModel === 'title-model' || selectedChatModel === 'artifact-model') {
-        apiModelId = process.env.DEFAULT_CHAT_MODEL_ID || "mistralai/mistral-7b-instruct:free"; // Changed fallback model
-      }
-      console.log(`[Chat API POST Handler]   Using apiModelId for fetch: ${apiModelId}`);
+      // Get the language model from our provider
+      const model = myProvider.languageModel(selectedChatModel);
+      
+      console.log('[Chat API POST Handler] Using AI SDK streamText with model:', selectedChatModel);
 
-      const messagesForApi = [
-        { role: 'system', content: systemPrompt({ selectedChatModel, requestHints }) },
-        ...messages.map(msg => ({ // Ensure messages are in the correct format for the API
+      return await streamText({
+        model,
+        system: systemPrompt({ selectedChatModel, requestHints }),
+        messages: messages.map(msg => ({
           role: msg.role, 
           content: msg.content,
-          // Omitting parts and attachments for simplicity in direct fetch, adjust if needed
-        }))
-      ];
-      
-      const fetchResponse = await fetch(process.env.OPENAI_BASE_URL + '/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        })),
+        onFinish: async ({ text }) => {
+          // Save the complete assistant message when streaming finishes
+          try {
+            const assistantMessage = {
+              chatId: id,
+              id: generateUUID(),
+              role: 'assistant' as const,
+              parts: [{ type: 'text' as const, text: text.trim() }],
+              attachments: [],
+              createdAt: new Date(),
+            };
+            
+            await saveMessages({
+              messages: [assistantMessage],
+            });
+            
+            console.log(`[Chat API] Successfully saved assistant message with ${text.length} characters`);
+          } catch (error) {
+            console.error('[Chat API] Failed to save assistant message:', error);
+          }
         },
-        body: JSON.stringify({
-          model: apiModelId, // Use the mapped apiModelId
-          messages: messagesForApi,
-          stream: true,
-          // Tools are temporarily disabled to focus on streaming text
-          // tools: selectedChatModel === 'chat-model-reasoning' ? undefined : [...], 
-          // tool_choice: selectedChatModel === 'chat-model-reasoning' ? undefined : 'auto',
-        }),
       });
-
-      if (!fetchResponse.ok) {
-        const errorBody = await fetchResponse.text();
-        console.error(`[Chat API] Error from LLM API: ${fetchResponse.status} ${fetchResponse.statusText}`, errorBody);
-        throw new Error(`LLM API request failed: ${fetchResponse.status} ${errorBody}`);
-      }
-      
-      // Directly return the body if it's a ReadableStream, or adapt if needed.
-      // For now, let's assume fetchResponse.body is a ReadableStream suitable for StreamingTextResponse
-      // The OpenAIStream specific callbacks like onFinal will need to be re-thought or handled differently.
-      // For this step, we prioritize getting the stream to the client.
-      // The onFinal logic for saving messages will be temporarily bypassed to simplify.
-      // TODO: Re-integrate onFinal logic correctly with StreamingTextResponse or alternative.
-      
-      // If fetchResponse.body is directly usable by StreamingTextResponse:
-      // return fetchResponse.body; 
-      // However, OpenAIStream is designed to parse the SSE format from OpenAI.
-      // Let's try to use OpenAIStream again, but if the import is the issue, this won't fix it.
-      // The error was "Module '"ai"' has no exported member 'OpenAIStream'".
-      // This suggests an issue with the 'ai' package version or its exports.
-      // Let's assume for a moment the import was correct and the issue is how it's used or if it's truly missing.
-      // If OpenAIStream is indeed not available, StreamingTextResponse is the next best bet.
-      // For StreamingTextResponse, we'd typically pass it a ReadableStream.
-      // The Vercel AI SDK's OpenAIStream is specifically for parsing OpenAI's event stream format.
-
-      // Bypassing OpenAIStream and its onFinal callback for now to test basic streaming
-      // TODO: Re-integrate message saving and Mem0 logging logic if this approach works.
-      if (!fetchResponse.body) {
-        throw new Error('Response body is null');
-      }
-      if (!fetchResponse.body) {
-        throw new Error('Response body is null');
-      }
-      // Decode Uint8Array stream to string stream
-      const textStream = fetchResponse.body.pipeThrough(new TextDecoderStream());
-      return textStream; 
     })();
     
     const streamContext = getStreamContext();
-    const responseStream: ReadableStream<string> = await stream; 
 
     if (streamContext) {
-      const resumable = await streamContext.resumableStream(streamId, () => responseStream);
+      const resumable = await streamContext.resumableStream(streamId, () => result.textStream);
       return new Response(resumable); 
     } else {
-      return new Response(responseStream, {
+      return result.toTextStreamResponse({
         headers: {
-          'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
-          'Connection': 'keep-alive',
         },
       });
     }

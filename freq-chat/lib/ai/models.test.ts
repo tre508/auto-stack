@@ -1,6 +1,29 @@
 import { simulateReadableStream } from 'ai';
 import { MockLanguageModelV1 } from 'ai/test';
-import { getResponseChunksByPrompt } from '@/tests/prompts/utils';
+
+// Simple utility function to generate response chunks
+function getResponseChunksByPrompt(prompt: any, isReasoning = false) {
+  const baseChunks = [
+    { type: 'text-delta', textDelta: 'Hello' },
+    { type: 'text-delta', textDelta: ', ' },
+    { type: 'text-delta', textDelta: 'world!' },
+    {
+      type: 'finish',
+      finishReason: 'stop',
+      logprobs: undefined,
+      usage: { completionTokens: 10, promptTokens: 3 },
+    },
+  ];
+
+  if (isReasoning) {
+    return [
+      { type: 'text-delta', textDelta: '<think>Let me think about this...</think>' },
+      ...baseChunks,
+    ];
+  }
+
+  return baseChunks;
+}
 
 export const chatModel = new MockLanguageModelV1({
   doGenerate: async () => ({

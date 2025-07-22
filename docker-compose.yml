@@ -1,6 +1,8 @@
 # docker-compose.yml
-# Unified Docker Compose for the auto-stack project.
+# Unified Docker Compose for the freq-chat project.
 # Derived from compose-mcp.yml and new-stack-agent-guide.md
+
+name: freq-chat
 
 services:
   traefik_auto:
@@ -9,12 +11,13 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443" # Added for potential HTTPS
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080" # Traefik dashboard
+      - "8081:8080" # Traefik dashboard (changed from 8080 to avoid conflict)
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       # - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro" # Optional: if you have custom static config
@@ -36,11 +39,11 @@ services:
         reservations:
           memory: 256M
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5678/healthz" ]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5678/healthz" ]
       interval: 30s
-      timeout: 15s
-      retries: 3
-      start_period: 60s
+      timeout: 30s
+      retries: 5
+      start_period: 120s
     env_file:
       - ./.env # Load shared variables
       - ./n8n.env # Load n8n specific variables
@@ -51,6 +54,8 @@ services:
       # N8N_API_KEY, N8N_LICENSE_KEY, N8N_BASIC_AUTH_ACTIVE etc. are in .env
       # GENERIC_TIMEZONE is in n8n.env (takes from TZ in root .env)
       - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL} # Ensure this is picked up from root .env
+    ports:
+      - "5678:5678" # Temporary direct access for debugging
     volumes:
       - /home/gleshen/docker-volumes/n8n_data:/home/node/.n8n # Standard n8n data
       - /home/gleshen/docker-volumes/n8n_host_vault:/host_vault # For Doc_Mirror_Update.json
@@ -113,11 +118,11 @@ services:
         reservations:
           memory: 512M
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:5050/status" ]
+      test: [ "CMD", "python", "-c", "import requests; exit(0 if requests.get('http://localhost:5050/status').status_code == 200 else 1)" ]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
     env_file:
       - ./.env # Load shared variables from the root .env first
       - ./controller/.env # Then load service-specific variables
@@ -156,11 +161,11 @@ services:
         reservations:
           memory: 128M
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3001/health" ]
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health" ]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
     env_file:
       - ./.env # Load shared variables
       - ./controller/eko.env # Load Eko specific variables
@@ -181,11 +186,11 @@ services:
         reservations:
           memory: 128M
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8000/healthz" ]
+      test: [ "CMD", "node", "-e", "require('http').get('http://localhost:8000/healthz', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))" ]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
     env_file:
       - ./.env # Load shared variables
       - ./openrouter_proxy/.env # Load OpenRouter Proxy specific variables
@@ -246,7 +251,7 @@ services:
       # OPENAI_API_KEY (which is HF_TOKEN) is in root .env
       # OPENAI_BASE_URL should be set here or in mem0/.env to point to the correct embedder proxy
       - OPENAI_API_KEY=${HF_TOKEN} # Use HF_TOKEN as OPENAI_API_KEY for Mem0
-      - OPENAI_BASE_URL=http://controller_auto:5050/mem0_openai_proxy/v1 # Example, ensure correct
+      - OPENAI_BASE_URL=http://bge_embedding_auto:7860/v1 # Point directly to BGE service
       - QDRANT_HOST=qdrant_auto # This is also in mem0/.env, ensure consistency
       - QDRANT_PORT=6333 # This is also in mem0/.env, ensure consistency
     ports:
@@ -265,7 +270,7 @@ services:
       - "traefik.http.services.mem0_auto.loadbalancer.server.port=8000" # Internal port
 
   postgres_logging_auto:
-    image: postgres:15 # Or specific version like postgres:15-alpine
+    image: pgvector/pgvector:pg15 # PostgreSQL 15 with pgvector extension
     container_name: postgres_logging_auto
     restart: unless-stopped
     deploy:
@@ -295,9 +300,8 @@ services:
       context: ./freq-chat
       dockerfile: Dockerfile
       args:
-        # Use the service name for postgres, assuming freqchat_user and freqchat_db are desired for this migration
-        # Ensure postgres_logging_auto is set up to handle this user/db or adjust as needed.
-        - POSTGRES_URL_BUILD_ARG=postgresql://freqchat_user:7453@postgres_logging_auto:5432/freqchat_db
+        # Fix: Use correct postgres credentials that match postgres_logging_auto
+        - POSTGRES_URL_BUILD_ARG=postgresql://autostack_logger:yoursecurepassword_logger@postgres_logging_auto:5432/autostack_logs
     container_name: freq_chat_auto
     restart: unless-stopped
     deploy:
@@ -306,12 +310,12 @@ services:
           memory: 1G
         reservations:
           memory: 256M
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 45s
+    # healthcheck:
+    #   test: [ "CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://[::1]:3000 || wget --quiet --tries=1 --spider http://localhost:3000" ]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 45s
     env_file:
       # Freq-Chat's Next.js app should pick up .env.development.local or .env.production
       - ./freq-chat/.env.development.local # Or .env.production depending on NODE_ENV
@@ -324,6 +328,9 @@ services:
       - NEXT_PUBLIC_CONTROLLER_API_URL=http://controller.localhost/api/v1 # External URL for client
       - NEXT_PUBLIC_MEM0_API_URL=http://mem0.localhost/ # External URL for client
       - NEXTAUTH_URL=${FREQCHAT_NEXTAUTH_URL:-http://localhost:3001}
+      # OpenAI API configuration for internal Docker network
+      - OPENAI_BASE_URL=http://openrouter_proxy_auto:8000/v1 # Internal Docker service URL
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY} # Use the OpenRouter API key from .env
     ports:
       - "${FREQCHAT_EXTERNAL_PORT:-3001}:3000" # Next.js default internal port is 3000
     networks:
@@ -331,6 +338,7 @@ services:
     depends_on:
       - controller_auto
       - mem0_auto
+      - openrouter_proxy_auto # Add dependency on OpenRouter proxy
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.freq_chat_auto.rule=Host(`${FREQCHAT_TRAEFIK_HOST:-chat.localhost}`)"

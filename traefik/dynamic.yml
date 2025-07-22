@@ -1,0 +1,13 @@
+http:
+  routers:
+    n8n-manual:
+      rule: "Host(`n8n.localhost`)"
+      entryPoints:
+        - "web"
+      service: "n8n-service"
+
+  services:
+    n8n-service:
+      loadBalancer:
+        servers:
+          - url: "http://n8n_auto:5678"
